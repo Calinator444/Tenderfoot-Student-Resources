@@ -1,50 +1,33 @@
-import logo from './logo.svg';
-import books from './books.png';
+//import logo from './logo.svg';
+//import books from './books.png';
+//import loginprofile from './loginprofile.png'
 //import './App.css'; commented out app.css since we're using bootstrap
 //a list of the bootstrap elements we'll be using
-import {Button, Alert, Card, Form, Container} from 'react-bootstrap';
+import {Button, Alert, Card, Form, Container, Image} from 'react-bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
+//import axios from 'axios';
 
+import Login from './Login';
+import Home from './Home';
+import {Route, Link} from 'react-router-dom';
+
+//a piece of middleware for postingS requests to the server
+//import Axios from 'axios';
 //import {useState} from React;
-import {React, useState} from 'react';
-
-
+import {React, useEffect, useState} from 'react';
 
 
 function App() {
 
-  const [loginSuccess, setLoginSuccess] = useState(false);
-  return (
+  return(
+    //using reac-router-dom to emulate hyperlinking between webpages
+    <div className="App">
+    <Route exact path="/" component={Home} />
+    <Route exact path="/Login" component={Login} />
 
-
-    <Container>
-    <div className="text-center">
-	  <h1 className="justify-content-center">Tenderfoot</h1>
-	  <img src={books} alt="book-stack"/>
     </div>
-      <Form>
-      <Form.Group className="mb-3">
-      <Form.Label>Email Address</Form.Label>
-      <Form.Control type="password" placeholder="C1234567@uon.edu.au"></Form.Control>
-      </Form.Group>
+    );
 
-
-      <Form.Group className="mb-3">
-      <Form.Label>Password</Form.Label>
-      <Form.Control type="password"></Form.Control>
-      </Form.Group>
-
-
-      <Form.Group>
-      <p><a href="">Forgot Password</a></p>
-      </Form.Group>
-      <Button type="submit">Submit</Button>
-    
-      </Form>
-      </Container>
-
-      
-  );
-}
+    }
 
 export default App;
