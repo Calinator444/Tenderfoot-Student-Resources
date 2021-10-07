@@ -6,12 +6,11 @@ import loginprofile from './loginprofile.png'
 import {Button, Alert, Card, Form, Container, Image} from 'react-bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import axios from 'axios';
-
-
-
-//a piece of middleware for postingS requests to the server
+import {useHistory} from 'react-router-dom';
 import Axios from 'axios';
 import {React, useEffect, useState, NavBar} from 'react';
+
+
 
 	function Login() {
 
@@ -23,7 +22,16 @@ import {React, useEffect, useState, NavBar} from 'react';
   const [loginAttempt,setLoginAttempt] = useState(0)
   const attemptLogin  = ()=>{
   //console.log('attempting login');
-  axios.get(`http://localhost:3001/api/select/${userName}`)
+  //var loginAttempt = encrypt(userName);
+  const encryptData = (message)=>{
+    var crypto = require('crypto');
+    var mykey = crypto.createCipher('aes-128-cbc', 'mypassword');//create cypher deprecated but still works?
+    var mystr = mykey.update(message, 'utf8', 'hex')
+    mystr += mykey.final('hex');
+    //console.log(mystr); //34feb914c099df25794bf9ccb85bea72}
+    return mystr;
+  }
+  axios.get(`http://192.168.0.4:3001/api/select/${encryptData(userName)}`)
   .then((res)=>{
     console.log("axios.get fired")
     if(res.data.length > 0)
@@ -33,7 +41,8 @@ import {React, useEffect, useState, NavBar} from 'react';
       if(password.localeCompare(passWord) == 0)
       {
         console.log("login successful");
-        setLoginAttempt(3)
+        history.push('/Home')
+        //setLoginAttempt(3)
       }
       else
       {
@@ -50,10 +59,16 @@ import {React, useEffect, useState, NavBar} from 'react';
     console.log("axios request complete")
   })
 }
+
+
+
   //use effect is a hook that runs as soon as a the code does
-  useEffect(()=>{
-  console.log(loginAttempt);
-  }, []);
+let history = useHistory();
+ //useEffect(()=>{
+ //   encryptData('abc');
+    //pls work
+    
+  //}, []);
   return (
 
     <Container>
@@ -63,16 +78,12 @@ import {React, useEffect, useState, NavBar} from 'react';
     </div>
       <div className="row justify-content-center">
       {
-      //return(<Alert variant="success">default return statement</Alert>)
+      //displays error message based on login attempt success
       (()=>{switch(loginAttempt) {
-        case 0:
-          return;
         case 1:
           return(<Alert variant="danger">Password does not match username</Alert>) 
         case 2:
           return(<Alert variant="danger">No account exists with that name</Alert>)
-        case 3:
-          return(<Alert variant="success">Login Attempt was successful</Alert>);
         default:
           break;
       }}

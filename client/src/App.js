@@ -22,7 +22,7 @@ function App() {
   return(
     //using reac-router-dom to emulate hyperlinking between webpages
     <div className="App">
-    <Route exact path="/" component={Home} />
+    <Route exact path="/Home" component={Home} />
     <Route exact path="/Login" component={Login} />
 
     </div>
