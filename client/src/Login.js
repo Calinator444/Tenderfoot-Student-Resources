@@ -20,9 +20,6 @@ import {React, useEffect, useState, NavBar} from 'react';
   const [userName, setUserName] = useState('');
   const [passWord, setPassword] = useState('');
   const [loginAttempt,setLoginAttempt] = useState(0)
-  const attemptLogin  = ()=>{
-  //console.log('attempting login');
-  //var loginAttempt = encrypt(userName);
   const encryptData = (message)=>{
     var crypto = require('crypto');
     var mykey = crypto.createCipher('aes-128-cbc', 'mypassword');//create cypher deprecated but still works?
@@ -31,6 +28,15 @@ import {React, useEffect, useState, NavBar} from 'react';
     //console.log(mystr); //34feb914c099df25794bf9ccb85bea72}
     return mystr;
   }
+
+
+
+  const attemptLogin  = ()=>{
+  //console.log('attempting login');
+  //var loginAttempt = encrypt(userName);
+
+  console.log('sending http request')
+  console.log(`http://192.168.0.4:3001/api/select/${encryptData(userName)}`)
   axios.get(`http://192.168.0.4:3001/api/select/${encryptData(userName)}`)
   .then((res)=>{
     console.log("axios.get fired")
@@ -40,9 +46,9 @@ import {React, useEffect, useState, NavBar} from 'react';
       var password = res.data[0].pWord;//pword cannot be invoked when res.data is stored in a variable
       if(password.localeCompare(passWord) == 0)
       {
-        console.log("login successful");
-        history.push('/Home')
-        //setLoginAttempt(3)
+        //console.log("login successful");
+        //history.push('/Home')
+        setLoginAttempt(3)
       }
       else
       {
@@ -56,13 +62,10 @@ import {React, useEffect, useState, NavBar} from 'react';
       setLoginAttempt(2)
       console.log("that username does not eist")
     }
-    console.log("axios request complete")
+    //console.log("axios request complete")
   })
 }
 
-
-
-  //use effect is a hook that runs as soon as a the code does
 let history = useHistory();
  //useEffect(()=>{
  //   encryptData('abc');
@@ -84,6 +87,8 @@ let history = useHistory();
           return(<Alert variant="danger">Password does not match username</Alert>) 
         case 2:
           return(<Alert variant="danger">No account exists with that name</Alert>)
+        case 3:
+          return(<Alert variant="success">We found an entry with that username and password</Alert>)
         default:
           break;
       }}

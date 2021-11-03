@@ -26,7 +26,7 @@ function App() {
   const [loginAttempt,setLoginAttempt] = useState(0)
   const attemptLogin  = ()=>{
   //console.log('attempting login');
-  axios.get(`http://localhost:3001/api/select/${userName}`)
+  axios.get(`http://localhost:3001/api/select/${userName}`, {'Access-Control-Allow-Origin': '*'})
   .then((res)=>{
     console.log("axios.get fired")
     if(res.data.length > 0)

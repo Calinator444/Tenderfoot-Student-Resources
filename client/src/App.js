@@ -9,6 +9,8 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 
 import Login from './Login';
 import Home from './Home';
+
+import adminHome from './Admin/Home';
 import {Route, Link} from 'react-router-dom';
 
 //a piece of middleware for postingS requests to the server
@@ -24,7 +26,7 @@ function App() {
     <div className="App">
     <Route exact path="/Home" component={Home} />
     <Route exact path="/Login" component={Login} />
-
+    <Route exact path="/Admin/Home" component={adminHome}/>
     </div>
     );
 
