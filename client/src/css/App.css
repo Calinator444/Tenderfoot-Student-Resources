@@ -1,0 +1,242 @@
+/*custom css*/
+
+body {
+  background-image: url("../resources/bg.jpg");
+}
+.App {
+  width: 100vw;
+  height: 100vh;
+}
+
+.replyButton {
+  margin: 10px;
+}
+
+ul {
+  padding-left: 0;
+
+  margin-top: 3rem;
+}
+
+#sidebar-main {
+  display: flex;
+  /* justify-content: center; */
+  flex-direction: column;
+}
+
+.checklist > li {
+  color: white;
+  list-style-type: none;
+  background-color: #4285f4;
+  margin-bottom: 0.5rem;
+  margin: 0.5rem;
+  text-align: center;
+}
+
+li > p {
+  margin-top: auto;
+  margin-bottom: auto;
+}
+li.completed {
+  background-color: #42f4a1;
+}
+li.completed:hover {
+  background-color: #42f4a1;
+}
+body {
+  margin: 0;
+  padding: 0;
+}
+
+
+.video-list > ul > li {
+  display: flex;
+  justify-content: space-between;
+  margin-left: 0.5rem;
+  margin-right: 0.5rem;
+  margin-bottom: 0.5rem;
+  border-radius: 0.5rem;
+}
+
+img.preview-img {
+  border-radius: 0.5rem;
+}
+.video-list > ul > li > p {
+  margin-left: 0.5rem;
+  margin-right: 0.5rem;
+}
+
+iframe {
+  margin-top: 2vh;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+li.highlighted {
+  background-color: rgb(53 81 84);
+}
+
+li.listed {
+  background-color: rgb(28, 44, 46);
+}
+.video-list > ul > li > img {
+  width: 7rem;
+}
+
+.video-list {
+  width: 20vw;
+  color: white;
+  background-color: rgb(12 19 20);
+  list-style-type: none;
+  display: flex;
+}
+.video-list > ul {
+  list-style-type: none;
+  width: 20vw;
+}
+
+.video-link {
+  font-weight: 700;
+}
+.video-player {
+  display: flex;
+  justify-content: space-between;
+  margin-left: 10vw;
+}
+li.completed,
+li.incomplete {
+  display: flex;
+  /* justify-content: space-between; */
+  padding: 0.4rem;
+}
+#sidebar-main {
+  background-color: rgb(28, 44, 46);
+  height: 100vh;
+
+  animation-duration: 1s;
+  position: absolute;
+}
+
+.sidebar-expanded {
+  animation-name: sidebar-open;
+  width: 20vw;
+}
+.sidebar-collapsed {
+  animation-name: sidebar-close;
+  width: 0vw;
+}
+
+button.checkbox {
+  margin-right: 0px;
+  right: 0;
+}
+
+@keyframes sidebar-close {
+  0% {
+    width: 20vw;
+  }
+  100% {
+    width: 0vw;
+  }
+}
+
+@keyframes sidebar-open {
+  0% {
+    width: 0vw;
+  }
+  100% {
+    width: 20vw;
+  }
+}
+/*shared attributes for main area*/
+#main-content {
+  /* margin-left: auto;
+  margin-right: 10vw; */
+  width: 80vw;
+  height: 60vh;
+  /*I stole this background color from Pedro's tutorial*/
+  background-color: rgb(28, 44, 46);
+  animation-duration: 1s;
+  left: 0;
+  right: 0;
+}
+
+.main-expanded {
+  /*width: 80vw;*/
+  animation-name: main-expanded;
+  width: 80vw;
+}
+.main-collapsed {
+  /* width: 70vw; */
+  animation-name: main-collapsed;
+  width: 60vw;
+}
+
+@keyframes main-collapsed {
+  0% {
+    width: 80vw;
+  }
+  100% {
+    width: 60vw;
+  }
+}
+
+@keyframes main-expanded {
+  0% {
+    width: 60vw;
+  }
+  100% {
+    width: 80vw;
+  }
+}
+
+.user-comment {
+  background-color: #8f8f8f;
+  border-radius: 0.5rem;
+  padding: 0.5rem;
+}
+
+.user-comment > h4 {
+  font-size: 1.1rem;
+}
+.comment-actions {
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: #4b4b4b;
+  text-align: right;
+}
+
+.comment-actions > * {
+  margin-right: 1rem;
+}
+.comment-actions > *:hover {
+  text-decoration: underline;
+}
+.comment-section {
+  margin-left: 10vw;
+  margin-right: 10vw;
+  width: "auto";
+  background-color: white;
+  height: 100%;
+  overflow-x: scroll;
+}
+
+.comment-wrapper {
+  background-color: rgb(77, 77, 77);
+  height: 25vh;
+}
+
+footer {
+  background-color: white;
+}
+
+.comment-section > * {
+  margin: 1rem;
+}
+
+.reply {
+  border-radius: 10px;
+  padding: 15px;
+  background-color: #d8d8d8;
+  margin-left: 50px;
+}

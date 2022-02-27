@@ -15,10 +15,10 @@ return(
     <Navbar.Toggle aria-controls="basic-navbar-nav" />
     <Navbar.Collapse>
       <Nav className="me-auto">
-        <Nav.Link href="#home">Home</Nav.Link>
-        <Nav.Link href="#link">Map</Nav.Link>
+        <Nav.Link href="#link">Home</Nav.Link>
+        <Nav.Link href="Map">Map</Nav.Link>
         <Nav.Link href="#link">Forums</Nav.Link>
-        <Nav.Link href="#link">How-to-videos</Nav.Link>
+        <Nav.Link href="videos">How-to-videos</Nav.Link>
       </Nav>
     </Navbar.Collapse>
   </Container>
