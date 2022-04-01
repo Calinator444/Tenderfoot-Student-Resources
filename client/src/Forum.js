@@ -1,5 +1,7 @@
 import React from 'react'
 import Navbar from './reactcomponents/Mainnav';
+
+import {useHistory} from 'react-router'
 import {Table} from 'react-bootstrap';
 function Forum() {
   return (
@@ -16,8 +18,11 @@ function Forum() {
     </tr>
   </thead>
   <tbody>
-    <tr>
-      <td>Life sucks</td>
+    <tr onClick={()=>{
+                  console.log('redirect fired')
+                  //this is how you rediret my dude
+                      window.location.href='/ForumPost?value=2'}}>
+      <td >Life sucks</td>
       <td>11/11/11</td>
       <td>3</td>
     </tr>

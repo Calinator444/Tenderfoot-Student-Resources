@@ -30,10 +30,9 @@ function Login() {
     //console.log('attempting login');
     //var loginAttempt = encrypt(userName);
 
-    console.log("sending http request");
-    console.log(`http://192.168.0.4:3001/api/select/${encryptData(userName)}`);
+    console.log(`http://localhost:3001/api/select/${encryptData(userName)}`);
     axios
-      .get(`http://192.168.0.4:3001/api/select/${encryptData(userName)}`)
+      .get(`http://localhost:3001/api/select/${encryptData(userName)}`)
       .then((res) => {
         console.log("axios.get fired");
         if (res.data.length > 0) {
@@ -57,11 +56,6 @@ function Login() {
   };
 
   let history = useHistory();
-  //useEffect(()=>{
-  //   encryptData('abc');
-  //pls work
-
-  //}, []);
   return (
     <Container>
       <div className="text-center">

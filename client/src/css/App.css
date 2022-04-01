@@ -3,6 +3,44 @@
 body {
   background-image: url("../resources/bg.jpg");
 }
+
+
+textarea {
+  resize: none;
+}
+div.forumPost {
+  background-color: white;
+  height: 100vh;
+  width: 80vw;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+
+
+/* This class is intended to be paired with the "main-content" ID */
+.white-mainclass {
+  background-color: #FFFFFF;
+}
+
+
+ h1:not(.white-mainclass > h1) { 
+  font-size: 40pt;
+  color: #FFFFFF; 
+  /* Color here fixes low constrast issue */
+  background-color: rgb(21,33,45);
+  width: fit-content;
+
+} 
+*/
+.forumPost > h1 {
+  margin:20px;
+}
+.forumPost > p
+{
+  padding: 30px;
+  ;
+}
 .App {
   width: 100vw;
   height: 100vh;
@@ -148,19 +186,93 @@ button.checkbox {
     width: 20vw;
   }
 }
+
 /*shared attributes for main area*/
+
+
+.main-white {
+  background-color: white;
+}
+
+
+#video-player {
+  background-color: rgb(28, 44, 46);
+}
+
+
 #main-content {
+  /* prevents table from getting scrunched up at smaller window sizes */
+  min-width: 400px;
+}
+#main-content, #video-player{
   /* margin-left: auto;
   margin-right: 10vw; */
   width: 80vw;
-  height: 60vh;
+  /* vh only calculated on startup? */
+  height: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 15px;
   /*I stole this background color from Pedro's tutorial*/
-  background-color: rgb(28, 44, 46);
-  animation-duration: 1s;
+
+  /* animation-duration: 1s; */
   left: 0;
   right: 0;
 }
+  /* background-color: rgb(28, 44, 46); */
+#video-player {
+  height: 60vh;
+}
 
+
+
+/* HOME PAGE */
+
+
+
+h1 {
+  margin-left: 20px;
+}
+.tile-wrapper {
+  display: inline-grid;
+  grid-template-columns: auto auto auto;
+}
+/* media query must appear AFTER the settings it overrides */
+@media only screen and (max-width: 1200px) {
+  .tile-wrapper {
+    grid-template-columns: auto auto;
+  }
+}
+@media only screen and (max-width: 900px) {
+  .tile-wrapper {
+    grid-template-columns: auto;
+  }
+}
+.tile {
+  width: 300px;
+  height: 300px;
+  position: relative;
+  margin: 20px;
+  box-shadow:         inset 0 0 40px #000000;
+}
+
+
+.tile > button {
+  position: absolute;
+  bottom: 0;
+}
+.tile > p, .tile > h2 {
+  background-color: rgba(0, 0, 0, 0.74);
+  color: #FFFFFF;
+  padding: 5px;
+  border-radius: 5px;
+}
+
+
+
+.tile > * {
+  margin: 20px;
+}
 .main-expanded {
   /*width: 80vw;*/
   animation-name: main-expanded;
@@ -239,4 +351,12 @@ footer {
   padding: 15px;
   background-color: #d8d8d8;
   margin-left: 50px;
+}
+
+
+
+/* WYSIWYG text editor settings */
+.rdw-dropdown-wrapper > * {
+  text-decoration: none;
+  color: #000000;
 }

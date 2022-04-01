@@ -37,8 +37,7 @@ function hasCourseLanguage(word) {
   //onsole.log('true')})
 }
 const cors = require("cors");
-const { copyFileSync } = require("fs");
-
+const { convertToRaw } = require("draft-js");
 const jsonParser = bodyParser.json();
 //app.use(bodyParser.urlencoded({ extended: false }))
 //app.use(bodyParser.json()
@@ -65,6 +64,31 @@ app.get("/api/todo", (req, res) => {
 
 
 
+
+
+//I'm planning to remove this once I've refined the query used to populate comment threads
+app.get("/api/selectCommentsLegacy", (req, res) => {
+  //const sqlQuery = "SELECT * FROM comment WHERE pendingModeration = 0";
+
+  const sqlQuery =
+    "SELECT comment.body, comment.commentID, replies.body AS replyBody FROM comments LEFT JOIN replies ON comments.commentID = replies.commentID";
+  db.query(sqlQuery, {}, (err, result) => {
+    if (err) console.log(err);
+    else res.send(result);
+  });
+});
+//GET requests do not have bodies, we need to use queries instead
+app.get("/api/selectcomments/:threadID", jsonParser, (req, res) => {
+  const threadID = req.params.threadID;
+  console.log('Searching for comment thread with the following ID:');
+  console.log(threadID);
+  const sqlQuery =
+    "SELECT comments.body, comments.commentID, replies.body AS replyBody FROM comments INNER JOIN commentThread ON commentThread.commentID = comments.commentId left JOIN replies ON replies.commentID = comment.commentID WHERE threadID = ?";
+  db.query(sqlQuery, [threadID], (err, result) => {
+    if (err) console.log(err);
+    else res.send(result);
+  });
+});
 app.post("/api/addReply", jsonParser, (req, res) =>{
   console.log("addReply request received")
   const query = "INSERT INTO replies(body, commentID) VALUES(?,?)";
@@ -80,29 +104,24 @@ app.post("/api/addReply", jsonParser, (req, res) =>{
   
 });
 
-app.get("/api/selectcomments", (req, res) => {
-  //const sqlQuery = "SELECT * FROM comment WHERE pendingModeration = 0";
-
-  const sqlQuery =
-    "SELECT comment.body, comment.commentID, replies.body AS replyBody FROM comment LEFT JOIN replies ON comment.commentID = replies.commentID";
-  db.query(sqlQuery, {}, (err, result) => {
-    if (err) console.log(err);
-    else res.send(result);
-  });
-});
-
-app.get("/api/selectModerated", (req, res) => {
-  const sqlQuery = "SELECT * FROM comments WHERE pendingModeration = 1";
+app.get("/api/selectUnmoderated", (req, res) => {
+  const sqlQuery = "SELECT comments.commentID, username, body, pendingModeration, datePosted FROM comments INNER JOIN accountComment ON accountComment.commentID = comments.commentID INNER JOIN Accounts ON Accounts.accountId = accountComment.accountId INNER JOIN commentThread ON commentThread.commentID = comments.commentID INNER JOIN thread ON thread.threadID = commentThread.threadID WHERE pendingModeration > 0";
   db.query(sqlQuery, [], (error, result) => {
+    if(error)
+      console.log(err)
+    else
     res.send(result);
   });
 });
 
-app.post("/api/approveComment", jsonParser, (req, res) => {
+
+
+
+app.patch("/api/approveComment", jsonParser, (req, res) => {
   console.log("request received");
   console.log(req.body.body);
 
-  const query = "UPDATE comments SET pendingModeration = 0 WHERE id = ?";
+  const query = "UPDATE comments SET pendingModeration = 0 WHERE commentId = ?";
   const commentID = req.body.body;
   //console.log("request received");
   db.query(query, [commentID], (error, result) => {
@@ -111,7 +130,7 @@ app.post("/api/approveComment", jsonParser, (req, res) => {
   });
 });
 app.get("/api/get/videos", jsonParser, (req, res) => {
-  const statement = "SELECT * FROM videos";
+  const statement = "SELECT videos.videoID, thread.threadID, videoLink, videoThumbnail, videoTitle FROM videos INNER JOIN videoThread ON videoThread.videoID = videos.videoID LEFT JOIN thread ON thread.threadID = videoThread.videoID";
   db.query(statement, [], (err, result) => {
     if (err) console.log(err);
     else res.send(result);
@@ -130,26 +149,82 @@ app.post("/api/alterTodo", jsonParser, (req, res) => {
 });
 app.use(express.json());
 
+app.get("/api/selectTestimonial/:testimonialID", jsonParser, (req, res)=>{
+  const statement = "SELECT * FROM testimonials WHERE testimonialId = ?"
+  db.query(statement, [req.params.testimonialID],(error, result)=>{
+
+    if(!error)
+    {
+      res.send(result)
+    }
+    else
+      console.log("an error occurred")
+  })
+})
+app.post("/api/insertTestimonial", jsonParser, (req, res)=>{
+  //testing whether or not JSON can be sent via HTTP post
+  console.log(req.body.body)
+  const statement = "INSERT INTO testimonials(title, body) VALUES(?,?)";
+  db.query(statement,["placeholder", req.body.body], (err, res)=>{
+    if(err)
+      console.log(err)
+  } )
+  
+  
+
+}
+);
+
 //parameters: user comment
 //returns: whether or not the content contained course language
-app.post("/api/addcomment", jsonParser, async (req, res) => {
+app.post("/api/addcomment", jsonParser, (req, res) => {
   var pendingModeration = 0;
   var comment = req.body.body;
-  console.log(req.body.body);
-  if (hasCourseLanguage(comment)) {
-    pendingModeration = 1;
-    console.log("comment contained inappropriate language");
-  }
+  var threadID = req.body.threadID;
+  // console.log(req.body.body);
+  // if (hasCourseLanguage(comment)) {
+  //   pendingModeration = 1;
+  //   console.log("comment contained inappropriate language");
+  // }
   const insertQuery =
     "INSERT INTO comment(body, pendingModeration) VALUES(?,?)";
   const values = [comment, pendingModeration];
+  const insertQuery2 = "INSERT INTO commentThread VALUES(?,?)";
+
+  let insertedId = null;
   db.query(insertQuery, values, (err, result) => {
     if (err) {
       console.log(err);
-    } else console.log(req.body.body + " added");
+    } 
+    else {
+      console.log("running insert query 2")
+      db.query(insertQuery2, [result.insertId, threadID], (secondErr, secondRes)=>{
+        if(err)
+           console.log(err)
+           else {
+             console.log("query 2 successful")
+           }
+         });
+         }
   });
-  res.send(hasCourseLanguage(comment)); //used to alert the user if the comment was negative
+  //res.send(hasCourseLanguage(comment)); //used to alert the user if the comment was negative
 });
+
+
+app.get("/api/get/testimonials", (req, res)=>{
+
+
+
+  const statement = "select title,testimonialId from testimonials";
+  db.query(statement,[], (error, result)=>{
+    if(!error)
+      res.send(result)
+    else
+      console.log(error)
+  })
+
+});
+
 
 //responds with a json file containing the result of the query
 app.get("/api/select/:emailAddress", (req, res) => {
@@ -158,7 +233,7 @@ app.get("/api/select/:emailAddress", (req, res) => {
   //const emailAddress = decrypt(req.params.emailAddress);
   emailAddress = req.params.emailAddress;
   //console.log(decrypt())
-  console.log(`email address received: ${emailAddress}`);
+  console.log(`emaiddress received: ${emailAddress}`);
 
   emailAddress = decrypt(emailAddress);
   console.log(`email address decrypted: ${emailAddress}`);

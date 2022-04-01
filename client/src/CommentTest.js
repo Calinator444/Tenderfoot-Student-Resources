@@ -1,6 +1,6 @@
 import { React, useEffect, useState } from "react";
 import { Row, Container, Col, Button, Toast, Modal } from "react-bootstrap";
-import { doStuff } from "./SharedFunctions";
+//import { doStuff } from "./SharedFunctions";
 import Mainnav from "./reactcomponents/Mainnav";
 import background from "./resources/bg.jpg";
 import axios from "axios";

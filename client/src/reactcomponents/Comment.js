@@ -12,9 +12,9 @@ function Comment(props) {
 
   const postReply = (commentID) => {
 
-    console.log(commentID);
-    console.log(replyContent);
-    const body = {commentID: commentID, body: replyContent};
+    // console.log(commentID);
+    // console.log(replyContent);
+    // const body = {commentID: commentID, body: replyContent};
     Axios.post("http://localhost:3001/api/addReply", 
     {id: commentID, body: replyContent})
     // {body: JSON.stringify(body)});
