@@ -6,7 +6,146 @@
 //this is how we import node modules after we install them
 //think of it like a java import statement
 
+
+//Packages used to upload videos
+//based on "Coding Shiksha's" tutorial
+
+const {v4: uuid} = require('uuid')
+const open = require('open')
+const multer = require('multer')
+
+
+const axios = require("axios");
+
+const bodyParser = require("body-parser");
+const mysql = require("mysql");
+const express = require("express");
+const app = express();
+const bannedWords = ["fuck", "shit", "banana"];
+const jsonParser = bodyParser.json();
+const fs = require('fs')
+const youtube = require("youtube-api")
+const cors = require("cors");
+//Fixes cors policy error
+app.use(cors());
 const crypto = require("crypto");
+
+const credentials = require("./credentials.json")
+
+const commentSelectQuery =  "SELECT comments.body, datePosted, comments.commentID, replies.body AS replyBody FROM comments INNER JOIN commentThread ON commentThread.commentID = comments.commentId left JOIN replies ON replies.commentID = comments.commentID WHERE threadID = ? AND pendingModeration = 0 ORDER BY datePosted DESC";
+
+const oAuth = youtube.authenticate({
+  type: 'oauth',
+  client_id: credentials.web.client_id,
+  client_secret: credentials.web.client_secret,
+  redirect_url: credentials.web.redirect_uris[0]
+
+})
+
+// const storage = multer.diskStorage({
+//   destination: '/',
+//   filename(req, file, cb) {
+//     const newFileName = `${uuid()}-${file.originalname}`
+//     cb(null,newFileName);
+//   }
+// })
+
+// const uploadVideoFile = multer({
+//   storage: storage
+// }).single("videoFile");
+
+//we use multer to save files locally because figuring out the directory of the file on the user's machine is a privacy violation
+const upload = multer({dest: "uploads/"});
+
+
+app.post('/api/uploadVideo', upload.single("videoFile"), (req, res)=>{
+const {title, description} = req.body;
+  console.log("upload video endpoint established")
+  console.log(`file destination was set to: ${req.file.destination}`)
+  //return
+  const filename = req.file.path
+  // if(req.file)
+  //   console.log('we found a file')
+  //return;
+  //else
+    console.log('no file?')
+    console.log(`title: ${title} description: ${description}`)
+    //return;
+
+
+    //ignore the stuff below here
+    
+  //console.log(req.file.filename)
+  // if(req.file){
+    // const filename = req.body.videoFile;
+    //const {title, description} = req.body
+
+
+    // console.log(oAuth.generateAuthUrl({
+    //   access_type: 'offline',
+    //   scope: 'https://www.googleapis.com/auth/youtube.upload',
+    //   state: JSON.stringify({filename, title, description})
+    // }))
+    open(oAuth.generateAuthUrl({
+      access_type: 'offline',
+      scope: 'https://www.googleapis.com/auth/youtube.upload',
+      state: JSON.stringify({filename, title, description})
+    }))
+  // }
+  // else
+  //   console.log('file not found')
+})
+
+app.get('/oauthcallback', (req, res)=>{
+  // res.redirect("http://localhost:3001/home")
+  //res.redirect()
+  const {filename, title, description} = JSON.parse(req.query.state)
+
+  oAuth.getToken(req.query.code, (err, tokens)=>{
+    if(err)
+    {
+      console.log(err);
+      return;
+    }
+    oAuth.setCredentials(tokens);
+
+    youtube.videos.insert({
+      resource: {
+        snippet: {title, description},
+        status: {privacyStatus: 'private'}
+      },
+      part: 'snippet,status', 
+      media: {
+        body: fs.createReadStream(filename)
+      }
+
+    }, (err, data)=>{
+      console.log("Done");
+
+
+      //youtube replies with a bunch of useful metadata once the video has been uploaded
+      const videoId = data.data.id;
+
+
+      
+      const embedUrl = `https://www.youtube.com/embed/${data.data.id}`
+      const thumbnail =`http://i3.ytimg.com/vi/${data.data.id}/hqdefault.jpg`
+      const title = data.data.snippet.title
+      const query = "insert into videos(videoLink, videoThumbnail, videoTitle) VALUES(?,?,?)";
+
+
+      console.log(`title: ${title}`)
+      //we can then insert the uploaded data into our database
+      db.query(query, [embedUrl,thumbnail, title], (error, result)=>{
+        if(error)
+          console.log(error)
+      })
+
+      console.log(data)
+      //process.exit();
+    })
+  })
+})
 
 const decrypt = (message) => {
   var crypto = require("crypto");
@@ -16,13 +155,7 @@ const decrypt = (message) => {
   return mystr;
 };
 
-const axios = require("axios");
 
-const bodyParser = require("body-parser");
-const mysql = require("mysql");
-const express = require("express");
-const app = express();
-const bannedWords = ["fuck", "shit", "banana"];
 
 function hasCourseLanguage(word) {
   var courseLanguage = false;
@@ -36,9 +169,10 @@ function hasCourseLanguage(word) {
   return courseLanguage;
   //onsole.log('true')})
 }
-const cors = require("cors");
+
 const { convertToRaw } = require("draft-js");
-const jsonParser = bodyParser.json();
+const { threadId } = require('worker_threads');
+
 //app.use(bodyParser.urlencoded({ extended: false }))
 //app.use(bodyParser.json()
 
@@ -49,8 +183,7 @@ const db = mysql.createPool({
   host: "localhost",
 });
 
-//Fixes cors policy error
-app.use(cors());
+
 
 app.get("/api/todo", (req, res) => {
   const query = "SELECT * FROM todoList";
@@ -77,19 +210,38 @@ app.get("/api/selectCommentsLegacy", (req, res) => {
     else res.send(result);
   });
 });
+
+
+
+const selectComments = (threadID)=>{
+  //const threadID = req.params.threadID;
+  console.log('Searching for comment thread with the following ID:');
+  console.log(threadID);
+  const sqlQuery =
+    "SELECT comments.body, comments.commentID, replies.body AS replyBody FROM comments INNER JOIN commentThread ON commentThread.commentID = comments.commentId left JOIN replies ON replies.commentID = comments.commentID WHERE threadID = ?";
+  db.query(sqlQuery, [threadID], (err, result) => {
+    if (err) console.log(err);
+    else{
+      console.log(result)
+      return result
+    }
+    
+  });
+}
+
 //GET requests do not have bodies, we need to use queries instead
 app.get("/api/selectcomments/:threadID", jsonParser, (req, res) => {
   const threadID = req.params.threadID;
   console.log('Searching for comment thread with the following ID:');
   console.log(threadID);
   const sqlQuery =
-    "SELECT comments.body, comments.commentID, replies.body AS replyBody FROM comments INNER JOIN commentThread ON commentThread.commentID = comments.commentId left JOIN replies ON replies.commentID = comment.commentID WHERE threadID = ?";
+    "SELECT comments.body, datePosted, comments.commentID, replies.body AS replyBody FROM comments INNER JOIN commentThread ON commentThread.commentID = comments.commentId left JOIN replies ON replies.commentID = comments.commentID WHERE threadID = ? AND pendingModeration = 0 ORDER BY datePosted DESC";
   db.query(sqlQuery, [threadID], (err, result) => {
     if (err) console.log(err);
     else res.send(result);
   });
 });
-app.post("/api/addReply", jsonParser, (req, res) =>{
+app.post("/api/addReply", jsonParser, (req, result) =>{
   console.log("addReply request received")
   const query = "INSERT INTO replies(body, commentID) VALUES(?,?)";
   const body = req.body.body;
@@ -97,9 +249,11 @@ app.post("/api/addReply", jsonParser, (req, res) =>{
 
   console.log(body);
   console.log(id);
-  db.query(query, [body, id], (err,res)=>{
+  db.query(query, [body, id], (err,result)=>{
     if(err)
       console.log(err)
+
+    
   } )
   
 });
@@ -136,6 +290,38 @@ app.get("/api/get/videos", jsonParser, (req, res) => {
     else res.send(result);
   });
 });
+
+app.post("/api/updateTestimonial", jsonParser, (req, res)=>{
+
+  console.log("endpoint reached")
+
+  const {textBodyId, body} = req.body;
+  const statement = "UPDATE textBody SET body = ?  WHERE textBodyId = ?"
+
+  db.query(statement, [body, textBodyId], (error, result)=>{
+    if(error)
+      console.log(error)
+    else
+      res.send(result)
+  })
+
+
+  
+
+})
+
+app.get("api/get/video/:videoId", (req, res)=>{
+  const query = "SELECT * FROM videos WHERE videoId = ?"
+  const videoId = req.params.videoId;
+
+  db.query(query, [videoId], (error, result)=>{
+    if(!error)
+      res.send(result)
+
+    else
+      console.log("an error occurred")
+  })
+})
 app.post("/api/alterTodo", jsonParser, (req, res) => {
   const itemID = req.body.body;
 
@@ -149,25 +335,43 @@ app.post("/api/alterTodo", jsonParser, (req, res) => {
 });
 app.use(express.json());
 
-app.get("/api/selectTestimonial/:testimonialID", jsonParser, (req, res)=>{
-  const statement = "SELECT * FROM testimonials WHERE testimonialId = ?"
-  db.query(statement, [req.params.testimonialID],(error, result)=>{
+
+
+
+
+//generic text bodies displayed on the site will also use this endpoint, but the 
+app.get("/api/selectTestimonial/:textBodyId", jsonParser, (req, res)=>{
+
+  const statement = "SELECT title,textBody.textBodyId ,body, videoLink, videoThumbnail FROM textBody LEFT JOIN textBodyVideo ON textBody.textBodyId = textBodyVideo.textBodyId LEFT JOIN videos ON textBodyVideo.videoId =  videos.videoId WHERE textBody.textBodyId = ?"
+  //const statement = "SELECT * FROM textBody WHERE textBodyId = ?"
+  db.query(statement, [req.params.textBodyId],(error, result)=>{
 
     if(!error)
     {
       res.send(result)
     }
     else
-      console.log("an error occurred")
+      console.log(error)
   })
 })
-app.post("/api/insertTestimonial", jsonParser, (req, res)=>{
+app.get("/api/get/article/:title", jsonParser, (req, res)=>{
+  console.log(req.params.title)
+  console.log(req.params.title)
+  const statement = "SELECT * FROM textBody WHERE title=?"
+  db.query(statement, [req.params.title], (error, result)=>{
+    
+      res.send(result)
+  })
+})
+app.post("/api/addTextBody", jsonParser, (req, res)=>{
   //testing whether or not JSON can be sent via HTTP post
-  console.log(req.body.body)
-  const statement = "INSERT INTO testimonials(title, body) VALUES(?,?)";
-  db.query(statement,["placeholder", req.body.body], (err, res)=>{
+  const {title, description, category, body} = req.body;
+  const statement = "INSERT INTO textBody(title, body, summary, category) VALUES(?,?, ?, ?)";
+  db.query(statement,[title,body,description, category ], (err, result)=>{
     if(err)
-      console.log(err)
+      res.send(err)
+    else
+      res.send(result)
   } )
   
   
@@ -187,7 +391,7 @@ app.post("/api/addcomment", jsonParser, (req, res) => {
   //   console.log("comment contained inappropriate language");
   // }
   const insertQuery =
-    "INSERT INTO comment(body, pendingModeration) VALUES(?,?)";
+    "INSERT INTO comments(body, pendingModeration) VALUES(?,?)";
   const values = [comment, pendingModeration];
   const insertQuery2 = "INSERT INTO commentThread VALUES(?,?)";
 
@@ -202,6 +406,16 @@ app.post("/api/addcomment", jsonParser, (req, res) => {
         if(err)
            console.log(err)
            else {
+             //let newComments = selectComments(threadID)
+            //console.log(newComments)
+             //res.send(newComments)
+             db.query(commentSelectQuery,[threadID], (thirdErr, thirdRes)=>{
+               if(thirdErr)
+                console.log(thirdErr)
+                else
+                  res.send(thirdRes)
+             })
+             //console.log(newComments)
              console.log("query 2 successful")
            }
          });
@@ -210,12 +424,24 @@ app.post("/api/addcomment", jsonParser, (req, res) => {
   //res.send(hasCourseLanguage(comment)); //used to alert the user if the comment was negative
 });
 
-
+//these two should be merged into one function
 app.get("/api/get/testimonials", (req, res)=>{
+  const statement = "select textBodyId,title, summary from textBody WHERE category='testimonial'";
+  db.query(statement,[], (error, result)=>{
+    if(!error)
+      res.send(result)
+    else
+      console.log(error)
+  })
+
+});
 
 
+//probably merge these two at some poi
 
-  const statement = "select title,testimonialId from testimonials";
+
+app.get("/api/get/articles", (req, res)=>{
+  const statement = "select textBodyId,title, summary from textBody WHERE category='article'";
   db.query(statement,[], (error, result)=>{
     if(!error)
       res.send(result)

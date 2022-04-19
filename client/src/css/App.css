@@ -1,5 +1,8 @@
 /*custom css*/
 
+
+
+
 body {
   background-image: url("../resources/bg.jpg");
 }
@@ -21,6 +24,8 @@ div.forumPost {
 /* This class is intended to be paired with the "main-content" ID */
 .white-mainclass {
   background-color: #FFFFFF;
+  overflow-y: scroll
+
 }
 
 
@@ -42,7 +47,7 @@ div.forumPost {
   ;
 }
 .App {
-  width: 100vw;
+  /* width: 100vw; */
   height: 100vh;
 }
 
@@ -102,6 +107,8 @@ img.preview-img {
 .video-list > ul > li > p {
   margin-left: 0.5rem;
   margin-right: 0.5rem;
+  width: 20vw;
+  overflow-x: hidden;
 }
 
 iframe {
@@ -187,32 +194,46 @@ button.checkbox {
   }
 }
 
-/*shared attributes for main area*/
 
-
-.main-white {
-  background-color: white;
+fieldset{
+  border: 1px solid gray;
+  padding: 10px;
+  border-radius: 5px;
 }
 
+
+/*shared attributes for main area*/
+
+.main-white, .article-wrapper-full {
+  background-color: white;
+}
+.article-wrapper-full{
+  padding: 30px;
+}
 
 #video-player {
   background-color: rgb(28, 44, 46);
 }
 
 
+
+
+
 #main-content {
+  /* When a div with a 'main-content' id is made part of the '.main-white' class the appropriate formatting is applied to child elements */
+  height: 100vh;
   /* prevents table from getting scrunched up at smaller window sizes */
   min-width: 400px;
+  padding: 15px;
 }
 #main-content, #video-player{
   /* margin-left: auto;
   margin-right: 10vw; */
   width: 80vw;
   /* vh only calculated on startup? */
-  height: 100%;
   margin-left: auto;
   margin-right: auto;
-  padding: 15px;
+  /* padding: 15px; */
   /*I stole this background color from Pedro's tutorial*/
 
   /* animation-duration: 1s; */
@@ -230,22 +251,48 @@ button.checkbox {
 
 
 
-h1 {
+h1, #main-content > p,#main-content > h2  {
   margin-left: 20px;
 }
 .tile-wrapper {
   display: inline-grid;
   grid-template-columns: auto auto auto;
 }
+
+
+
+/* I found a way to auto-scale the video player while maintaining the aspect ratio: (credit: goes to "michal.jakubeczy")
+https://stackoverflow.com/questions/35814653/automatic-height-when-embedding-a-youtube-video*/
+iframe{
+  width: 60vw;
+  height: calc(60vw/1.77);
+}
 /* media query must appear AFTER the settings it overrides */
 @media only screen and (max-width: 1200px) {
   .tile-wrapper {
     grid-template-columns: auto auto;
   }
+  
 }
 @media only screen and (max-width: 900px) {
-  .tile-wrapper {
+  /* .tile-wrapper {
     grid-template-columns: auto;
+  } */
+
+
+  #video-player{
+    display: block;
+    height: auto;
+  }
+  iframe{
+  width: 80vw;
+  height: calc(80vw/1.77);
+}
+  .video-list {
+    width: 100%
+  }
+  .video-list > ul {
+    width: 100%;
   }
 }
 .tile {
@@ -264,11 +311,14 @@ h1 {
 .tile > p, .tile > h2 {
   background-color: rgba(0, 0, 0, 0.74);
   color: #FFFFFF;
+
   padding: 5px;
   border-radius: 5px;
 }
 
-
+section.admin-controls > *, .admin-publishing > * {
+  margin: 10px;
+}
 
 .tile > * {
   margin: 20px;
@@ -283,6 +333,8 @@ h1 {
   animation-name: main-collapsed;
   width: 60vw;
 }
+
+
 
 @keyframes main-collapsed {
   0% {
@@ -311,17 +363,34 @@ h1 {
 .user-comment > h4 {
   font-size: 1.1rem;
 }
+
+
+/* USER COMMENT STYLING OPTIONS */
+
+
+.comment-lower {
+  display: flex;
+  /* flex-direction: row; */
+  justify-content: space-between;
+
+}
+
+
+.time-posted {
+  font-size: 10pt;
+  font-style: italic;
+}
 .comment-actions {
   font-size: 0.8rem;
   font-weight: 800;
   color: #4b4b4b;
-  text-align: right;
+  /* text-align: right; */
 }
 
-.comment-actions > * {
+.comment-actions > span {
   margin-right: 1rem;
 }
-.comment-actions > *:hover {
+.comment-actions > span:hover {
   text-decoration: underline;
 }
 .comment-section {
@@ -336,6 +405,52 @@ h1 {
 .comment-wrapper {
   background-color: rgb(77, 77, 77);
   height: 25vh;
+}
+
+.preview-content {
+  margin-left: 20px;
+}
+
+
+.article-list-grid{
+  display: grid;
+  grid-template-columns: auto auto;
+}
+/* Used for displaying articles */
+.article-list-grid, .article-list{
+  list-style-type: none;
+  width: 100%;
+}
+.article-list {
+  /* display: flex; */
+  /* margin-left: auto;
+  margin-right: auto; */
+
+  display: flex;
+  flex-direction: column;
+}
+
+.preview-content > a{
+  color: black;
+  text-decoration: none;
+
+}
+
+
+.article-list > li {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.article-list > li , .article-list-grid > li{
+  display: flex;
+  justify-content: flex-start;
+
+  margin-bottom: 20px;
+  width: 50%;
+}
+.thumbnail {
+  min-width:100px;
 }
 
 footer {

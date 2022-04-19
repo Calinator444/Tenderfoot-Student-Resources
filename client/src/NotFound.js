@@ -5,12 +5,13 @@ function NotFound() {
 
 
     //"overflow: auto" prop fixes the margin issue for child elements
-    <div id='main-content' style={{backgroundColor: 'white', color: 'black', overflow: "auto"}}>
+    <div id='main-content' className='white-mainclass'>
 
 
     {/* // WHYYYYYY */}
+    <h1 style={{color: 'black', margin: "50px"}}>Sorry :(</h1>
         <section>
-        <h1 style={{color: 'black', margin: "50px"}}>Sorry :(</h1>
+        
         <p style={{margin: "50px"}}>We couldn't find the page you're looking for</p>
         </section>
     </div>

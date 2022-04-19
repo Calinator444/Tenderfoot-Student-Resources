@@ -7,7 +7,7 @@ function CommentAudit() {
 
   const [data, setData] = useState([])
 
-
+    
   const approveComment = (commentId)=>{
     console.log("attempting to approve comment with ID "+commentId)
     Axios.patch("http://localhost:3001/api/approveComment", {body: commentId})

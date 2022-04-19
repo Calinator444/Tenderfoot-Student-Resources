@@ -4,6 +4,11 @@ import * as mui from "@mui/icons-material";
 import SidebarData from "./SidebarData";
 import Mainnav from "./reactcomponents/Mainnav";
 import Logo from "./resources/books.png" 
+import ListGeneric from "./Testimonials/ListGeneric"
+import Axios from "axios"
+import ArticleList from "./Testimonials/ArticleList"
+
+import tileContents, { TileContents } from "./TileContents"
 //any non-javascript items we import need 
 import todoImage from "./resources/todo.jpg"
 
@@ -16,9 +21,17 @@ import {Button} from "react-bootstrap";
 }
 
 function Home() {
+  const [articles, setArticles] = useState([]);
+
   useEffect(() => {
-    let getData = SidebarData;
-  }, {});
+    Axios.get("http://localhost:3001/api/get/articles").then((res)=>{
+      setArticles(res.data)
+
+    })
+  }, []);
+
+
+
   const [sidebarExpanded, setSidebarExpanded] = useState(true);
   return (
     <div className="root">
@@ -26,7 +39,7 @@ function Home() {
         id="sidebar-main"
         className={sidebarExpanded ? "sidebar-expanded" : "sidebar-collapsed"}
       >
-        <ul className="checklist">
+        <ul className="checklist">w
           <SidebarData />
         </ul>
         <button
@@ -45,7 +58,6 @@ function Home() {
         //side menu is collapsed by defaults
       }
               {/* <header style={{backgroundColor: "rgb(122 122 122)"}}> <img width="300px" src={Logo} alt="book-logo" /> </header> */}
-      <Mainnav/>
   
       <div
         id="main-content"
@@ -57,18 +69,26 @@ function Home() {
 
 
         
-
+        {/* tile list */}
         <div class="tile-wrapper">
 
+          {TileContents.map((val)=>{
+              const {body, title, backgroundImage, link} = val
 
-          <Tile backgroundImage={todoImage} title="todo-list">Keep track of all the work you'll need to get done before the semester gets too busy. You can do so using the todo list we've built for you.</Tile>
+              return (
+                <Tile title={title} backgroundImage={backgroundImage} link={link}>{body}</Tile>
+              )
 
 
-          <Tile backgroundImage={placeHolder} title="placeholder1">placeholder text</Tile>
+          })}
+          {/* <Tile backgroundImage={todoImage} title="todo-list">Keep track of all the work you'll need to get done before the semester gets too busy. You can do so using the todo list we've built for you.</Tile> */}
+
+
+          {/* <Tile backgroundImage={placeHolder} title="placeholder1">placeholder text</Tile>
           <Tile backgroundImage={placeHolder} title="placeholder2">placeholder text</Tile>
           <Tile backgroundImage={placeHolder} title="placeholder3">placeholder text</Tile>
           <Tile backgroundImage={placeHolder} title="placeholder4">placeholder text</Tile>
-          <Tile backgroundImage={placeHolder} title="placeholder5">placeholder text</Tile>
+          <Tile backgroundImage={placeHolder} title="placeholder5">placeholder text</Tile> */}
           </div>
           {/* <div className="tile" style={{backgroundImage : `url(${todoImage})`}}>
 
@@ -76,6 +96,16 @@ function Home() {
             <p>Keep track of all the work you'll need to get done before the semester gets too busy. You can do so using the todo list we've built for you.</p>
             <Button variant="light">Click here</Button>
           </div> */}
+      </div>
+
+
+      <div>
+        
+        <div className='article-wrapper-full'>
+          <h2>Articles</h2>
+          <ListGeneric dataset={articles} gridOverride/>
+        </div>
+
       </div>
     </div>
   );

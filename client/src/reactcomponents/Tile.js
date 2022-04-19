@@ -1,5 +1,6 @@
 import React from 'react'
 import {Button} from 'react-bootstrap'
+import {LinkContainer} from 'react-router-bootstrap'
 function Tile(props) {
 
     const {description, title, link, backgroundImage} = props;
@@ -8,7 +9,10 @@ function Tile(props) {
 
             <h2>{title}</h2>
             <p>{props.children}</p>
-            <Button variant="dark">Click here</Button>
+
+            <LinkContainer to={link ? link : "#" }>
+              <Button variant="dark">Click here</Button>
+            </LinkContainer>
     </div>
     
   )

@@ -1,12 +1,11 @@
 //import logo from "./logo.svg";
 import books from "./resources/books.png";
 import loginprofile from "./resources/loginprofile.png";
-//import './App.css'; commented out app.css since we're using bootstrap
 //a list of the bootstrap elements we'll be using
 import { Button, Alert, Card, Form, Container, Image } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
 import axios from "axios";
-import { useHistory } from "react-router-dom";
+//import { useHistory } from "react-router-dom";
 import Axios from "axios";
 import { React, useEffect, useState, NavBar } from "react";
 
@@ -55,7 +54,7 @@ function Login() {
       });
   };
 
-  let history = useHistory();
+  //let history = useHistory();
   return (
     <Container>
       <div className="text-center">

@@ -41,21 +41,25 @@ function VideoPlayer() {
   }, []);
   return (
     <>
-      <Mainnav />
       <div style={{ display: "flex", "flex-direction": "column" }}>
         <div id="video-player" className="video-player">
+
+
+
+          <div className="video-wrapper">
           <iframe
 
           //560x315 aspect ratio
-            width="854"
-            height="480"
+            // width="853"
+            // height="505"
+
             src={currentVideo}
             title="YouTube video player"
             frameborder="0"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowfullscreen
           ></iframe>
-
+          </div>
           <div
             className="video-list"
             style={{ "justify-content": "space-between" }}

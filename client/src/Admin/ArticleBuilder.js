@@ -1,44 +1,65 @@
-//used for building student testimonials
-import {Form, Tooltip} from 'react-bootstrap'
-import TextEditor from '../TextEditor';
-import React, {useState, useEffect, useRef} from 'react'
+import React, {useState, useRef, useImperativeHandle} from 'react'
+import {Form, Button} from 'react-bootstrap'
+import TextEditor from "../TextEditor"
+import Mainnav from "../reactcomponents/Mainnav"
+function ArticleBuilder() 
+{
+const [articleState, setArticleState] = useState(
+    {title : '',
+    description: '',
+    includeThumbnail : false}
+)
+
+const myRef = useRef({})
+const handleStateChange = (e)=>{
+    const value = e.target.value
+    const name = e.target.name
+
+    //I'm using the spread operator to copy all of the previous values from the object while overwriting "name"
+    setArticleState({...articleState, [name]: value})
+    console.log(articleState)
+    console.log(name)
+}   
 
 
-function ArticleBuilder() {
 
-    useEffect(()=>{
-
-        console.log("correct page loaded")
-    }, [])
-
+    const {title, description} = articleState
   return (
+    <>
 
+    <Mainnav/>
+    
 
-    // style attribute ignored?
-    <div id='main-content' style={{backgroundColor:"white", padding: '12px'}}>
+    <div id="main-content" className="white-mainclass">
+        <h1>Article Builder</h1>
 
+        <p>You can use this to build articles for our user base to read.</p>
+        <Form>
+            <Form.Group>
 
-      <Form>
-        <Form.Group className='mb-3'>
-          <Form.Label>
-            Title
-          </Form.Label>
-          <Form.Control type="text">
+                <Form.Label>Title</Form.Label>
+                <Form.Control type="Text" name="title" onChange={(e)=>{handleStateChange(e)}} placeHolder="Article Title"></Form.Control >
 
-          </Form.Control>
+                <Form.Text variant="text-muted">The title that will appear when the article is listed</Form.Text>
+            </Form.Group>
 
+            <Form.Group>
+                <Form.Label>Description</Form.Label>
+                <Form.Control name="description" onChange={(e)=>{handleStateChange(e)}} as="textarea" rows="3" placeholder='Article Description'>
 
-
-          <Form.Text className="text-muted">
-            The name that will appear when this article is listed
-          </Form.Text>
-        </Form.Group>
-      </Form>
-
-
-      {/* This is a text editor, the readOnly state would never change because this information is never displayed to regualr site visitors */}
-      <TextEditor style={{border: '1px solid black'}} readOnly={false}/>
-      </div>
+            </Form.Control>
+            </Form.Group>
+        </Form>
+        <Form.Label>Article body</Form.Label>
+        <TextEditor showControls={false} title={title} description={description} readOnly={false} myRef={myRef} category="article" publishingMode/>
+        {/* <Button onClick={()=>{
+            console.log(articleState)
+        }}>Log article state</Button> */}
+        {/* <Button onClick={()=>{console.log(window.editorState)}}> {/*using window to store a global 
+            Log stuff
+        </Button> */}
+    </div>
+    </>
   )
 }
 

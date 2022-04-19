@@ -1,0 +1,28 @@
+
+import todo from "./resources/todo.jpg"
+import studentsgathered from "./resources/studentsgathered.jpg"
+
+export const TileContents= [{
+    body:"Keep track of all the work you'll need to get done before the semester gets too busy. You can do so using the todo list we've built for you.",
+    title: "todo-list",
+    backgroundImage: todo,
+    link: '#'
+},
+{
+    title: "Testimonials",
+    body: "listen to written and recorded accounts from students who started off in the same place as yourself",
+    backgroundImage: studentsgathered,
+    link: '/Testimonials/testimonialList'
+},
+{
+    title: "How-to-videos",
+    body: "get a head start on your studies with the video guides we've created to help you navigate the univesity's various student resoruces",
+    link: "/videos"
+}
+// {
+//     title: "Finding your way around campus",
+//     body: "give yourself some time to figured out the layout of the campus with some of the 5 tips we have to offer"
+//     backgroundImage: 
+// }
+
+]
