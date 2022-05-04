@@ -3,7 +3,7 @@ import "./css/App.css";
 
 function Sidebar() {
   return (
-    <div className="Sidebar">
+    <div className="Sidebar-close">
       <ul className="SidebarList"></ul>)
     </div>
   );

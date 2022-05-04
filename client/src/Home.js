@@ -7,6 +7,8 @@ import Logo from "./resources/books.png"
 import ListGeneric from "./Testimonials/ListGeneric"
 import Axios from "axios"
 import ArticleList from "./Testimonials/ArticleList"
+import {Reducer} from "./index"
+import {useSelector, useDispatch, ReactReduxContext} from "react-redux"
 
 import tileContents, { TileContents } from "./TileContents"
 //any non-javascript items we import need 
@@ -15,18 +17,26 @@ import todoImage from "./resources/todo.jpg"
 import placeHolder from "./resources/placeholder.png"
 import Tile from "./reactcomponents/Tile";
 
-import {Button} from "react-bootstrap";
+import {Button, Form} from "react-bootstrap";
 {
   //elements of the ui update automatically whenver state variables are changed
 }
 
 function Home() {
+  const store = useSelector(state => state)
+
+  const dispatch = useDispatch()
   const [articles, setArticles] = useState([]);
 
   useEffect(() => {
+
+
+    //dispatch({type: 'login', payload: {username: 'Caleb'}})
+    //let store = useSelector(state => state.username)
+    console.log(store)
     Axios.get("http://localhost:3001/api/get/articles").then((res)=>{
       setArticles(res.data)
-
+    
     })
   }, []);
 
@@ -35,6 +45,9 @@ function Home() {
   const [sidebarExpanded, setSidebarExpanded] = useState(true);
   return (
     <div className="root">
+      <Form.Select>
+            <option value='test'></option>
+        </Form.Select>
       {/* <div
         id="sidebar-main"
         className={sidebarExpanded ? "sidebar-expanded" : "sidebar-collapsed"}
@@ -66,7 +79,9 @@ function Home() {
             <h1>Home</h1>
         {/* wrapper class is used for grid layout */}
 
-
+        <Button onClick={()=>{
+          console.log(store)
+        }}>Test button</Button>
 
         
         {/* tile list */}

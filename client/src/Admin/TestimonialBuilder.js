@@ -54,7 +54,6 @@ function TestimonialBuilder() {
 
 
 <>
-<Mainnav/>
     <div id='main-content' className='white-mainclass'>
 
       <h1>Testimonial Builder</h1>

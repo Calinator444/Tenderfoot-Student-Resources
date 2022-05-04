@@ -2,11 +2,13 @@ import { RemoveFromQueue } from "@mui/icons-material";
 import React, {useRef, useState, useEffect} from "react";
 import {Form, Button} from 'react-bootstrap'
 
+import { useSelector } from "react-redux";
+
 import Axios from 'axios';
-
 function Comment(props) {
-
-
+  const {replySetter} = props
+  const store = useSelector(state => state)
+  
   const [middleStatement, setMiddleStatement] = useState('');
   const { username, body, commentId, timePosted } = props;
   const [replyContent, setReplyContent] = useState('')
@@ -19,7 +21,7 @@ function Comment(props) {
     year: timePosted.getFullYear(),
     minutes: timePosted.getMinutes(),
     hour: (getHours > 12 ? getHours - 12 : getHours),
-     meridian: (getHours > 12 ? 'pm' : 'am')//ternary operator confuses javascript into thinking I'm trying to parse a value pair
+    meridian: (getHours > 12 ? 'pm' : 'am')//ternary operator confuses javascript into thinking I'm trying to parse a value pair
   }
 
   
@@ -45,7 +47,12 @@ function Comment(props) {
     // console.log(replyContent);
     // const body = {commentID: commentID, body: replyContent};
     Axios.post("http://localhost:3001/api/addReply", 
-    {id: commentID, body: replyContent})
+    {id: commentID, body: replyContent, accountId: store.userId}).then((res)=>{
+      console.log(res.data)
+      const mapping = res.data.map(({ body: replyBody, commentID,replyAccount }) => ({replyBody,commentID, replyAccount}));
+      replySetter(mapping)
+//console.log(transformed);
+    })
     // {body: JSON.stringify(body)});
   }
 
@@ -123,7 +130,7 @@ function Comment(props) {
       <Button className="replyButton"onClick={()=>{
         postReply(commentId)
       }}>Post</Button>
-      <Button  className="replyButton">Cancel</Button>
+      <Button className="replyButton">Cancel</Button>
       </div>
       
       </>

@@ -17,7 +17,6 @@ function ArticleList() {
 
   return(
    <>
-        <Mainnav/>
         <div className='white-mainclass' id="main-content">
 
 

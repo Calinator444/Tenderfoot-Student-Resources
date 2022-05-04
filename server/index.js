@@ -30,6 +30,9 @@ const cors = require("cors");
 app.use(cors());
 const crypto = require("crypto");
 
+
+const todoQuery = "SELECT deadline, todoItemAccount.itemId, checked, description, title from TodoItem LEFT JOIN TodoItemAccount ON TodoItemAccount.itemId = todoItem.itemId LEFT JOIN accounts ON accounts.accountId = TodoItemAccount.accountId WHERE accounts.accountId =?";
+
 const credentials = require("./credentials.json")
 
 const commentSelectQuery =  "SELECT comments.body, datePosted, comments.commentID, replies.body AS replyBody FROM comments INNER JOIN commentThread ON commentThread.commentID = comments.commentId left JOIN replies ON replies.commentID = comments.commentID WHERE threadID = ? AND pendingModeration = 0 ORDER BY datePosted DESC";
@@ -184,14 +187,38 @@ const db = mysql.createPool({
 });
 
 
+//jsonparser needs to be used 
+app.post("/api/post/todo", jsonParser, (req, res)=>{
+  const {title, description, accountId, date} = req.body;
+  const statement = "INSERT INTO todoItem(description,title,deadline) VALUES(?,?,?)"
+  const statement2 = "INSERT INTO todoItemAccount(accountId, itemId, checked) VALUES(?, ?, 0)"
+  db.query(statement, [description, title, date], (err, result)=>{
+    if(err)
+      console.log(err)
+    db.query(statement2,[accountId,result.insertId], (err2, result2)=>{
+      if(err2)
+        console.log(err2)
+      db.query(todoQuery, [accountId],(err3, result3)=>{
+        res.send(result3)
+      })
+      //res.send(result2)
+    } )
+  })
+  //console.log(req.body)
+})
 
-app.get("/api/todo", (req, res) => {
-  const query = "SELECT * FROM todoList";
-  console.log("get request received");
-  db.query(query, {}, (err, result) => {
-    console.log('sending "todolist" contents...');
-    if (err) console.log(err);
-    else res.send(result);
+app.get("/api/get/todo/:accountId", (req, res) => {
+
+  const accountId = req.params.accountId;
+  console.log(`accountId was set to ${accountId}`)
+  const query = todoQuery;
+  db.query(query, [accountId], (err, result) => {
+    if (err) 
+      console.log(err);
+    res.send(result);
+
+
+    
   });
 });
 
@@ -212,51 +239,55 @@ app.get("/api/selectCommentsLegacy", (req, res) => {
 });
 
 
-
-const selectComments = (threadID)=>{
-  //const threadID = req.params.threadID;
-  console.log('Searching for comment thread with the following ID:');
-  console.log(threadID);
-  const sqlQuery =
-    "SELECT comments.body, comments.commentID, replies.body AS replyBody FROM comments INNER JOIN commentThread ON commentThread.commentID = comments.commentId left JOIN replies ON replies.commentID = comments.commentID WHERE threadID = ?";
-  db.query(sqlQuery, [threadID], (err, result) => {
-    if (err) console.log(err);
-    else{
-      console.log(result)
-      return result
-    }
-    
-  });
-}
-
 //GET requests do not have bodies, we need to use queries instead
 app.get("/api/selectcomments/:threadID", jsonParser, (req, res) => {
   const threadID = req.params.threadID;
   console.log('Searching for comment thread with the following ID:');
   console.log(threadID);
   const sqlQuery =
-    "SELECT comments.body, datePosted, comments.commentID, replies.body AS replyBody FROM comments INNER JOIN commentThread ON commentThread.commentID = comments.commentId left JOIN replies ON replies.commentID = comments.commentID WHERE threadID = ? AND pendingModeration = 0 ORDER BY datePosted DESC";
+    "SELECT comments.body, replyAccount.username AS replyAccount, datePosted, accounts.username, comments.commentID, replies.body AS replyBody FROM comments INNER JOIN commentThread ON commentThread.commentID = comments.commentId left JOIN replies ON replies.commentID = comments.commentID INNER JOIN accounts ON accounts.accountId = comments.accountId left JOIN accounts AS replyAccount ON replyAccount.accountId = replies.userID WHERE threadID = ? AND pendingModeration = 0 ORDER BY datePosted DESC";
   db.query(sqlQuery, [threadID], (err, result) => {
     if (err) console.log(err);
     else res.send(result);
   });
 });
-app.post("/api/addReply", jsonParser, (req, result) =>{
+app.post("/api/addReply", jsonParser, (req, res) =>{
   console.log("addReply request received")
-  const query = "INSERT INTO replies(body, commentID) VALUES(?,?)";
+  const query = "INSERT INTO replies(body, commentID, userID) VALUES(?,?,?)";
+  const query2 = "SELECT replyID, body, username AS replyAccount, commentID FROM replies LEFT JOIN accounts ON accounts.accountId = replies.userID"
   const body = req.body.body;
   const id = req.body.id;
+  const accountId = req.body.accountId;
 
   console.log(body);
   console.log(id);
-  db.query(query, [body, id], (err,result)=>{
+  db.query(query, [body, id, accountId], (err,result)=>{
     if(err)
-      console.log(err)
+      {console.log(err)}
+    else{
+      db.query(query2, [id], (err2, result2)=>{
+        res.send(result2)
+      })
+    }
 
     
   } )
   
 });
+
+
+app.get('/api/get/account/:username', jsonParser, (req, res)=>{
+  console.log(req.params.username)
+
+  const query = 'SELECT * FROM accounts WHERE username =  ?'
+  db.query(query, [req.params.username], (error, result)=>{
+    if(error)
+      console.log(error)
+    res.send(result)
+  })
+
+})
+
 
 app.get("/api/selectUnmoderated", (req, res) => {
   const sqlQuery = "SELECT comments.commentID, username, body, pendingModeration, datePosted FROM comments INNER JOIN accountComment ON accountComment.commentID = comments.commentID INNER JOIN Accounts ON Accounts.accountId = accountComment.accountId INNER JOIN commentThread ON commentThread.commentID = comments.commentID INNER JOIN thread ON thread.threadID = commentThread.threadID WHERE pendingModeration > 0";
@@ -322,13 +353,18 @@ app.get("api/get/video/:videoId", (req, res)=>{
       console.log("an error occurred")
   })
 })
-app.post("/api/alterTodo", jsonParser, (req, res) => {
-  const itemID = req.body.body;
+app.patch("/api/alterTodo", jsonParser, (req, res) => {
+  //const itemID = req.body.body;
+  const {checked, itemId, accountId} = req.body;
+  const statement = "UPDATE todoItemAccount SET checked = ? WHERE itemId = ? AND accountId = ?";
+  db.query(statement, [checked, itemId, accountId], (err, result) => {
+    if (err) console.log(err);
 
-  const statement = "UPDATE TABLE todoList SET completed = 1 WHERE id = ?";
 
-  db.query(statement, [itemID], (error, result) => {
-    if (error) console.log(error);
+
+    db.query(todoQuery,[accountId], (err2, result2)=>{
+      res.send(result2)
+    })
   });
   // console.log("altertodo fired");
   // console.log(req.body.body);
@@ -383,19 +419,19 @@ app.post("/api/addTextBody", jsonParser, (req, res)=>{
 //returns: whether or not the content contained course language
 app.post("/api/addcomment", jsonParser, (req, res) => {
   var pendingModeration = 0;
-  var comment = req.body.body;
-  var threadID = req.body.threadID;
+  const {body, threadID, accountId} = req.body 
+  //var comment = req.body.body;
+  //var threadID = req.body.threadID;
   // console.log(req.body.body);
   // if (hasCourseLanguage(comment)) {
   //   pendingModeration = 1;
   //   console.log("comment contained inappropriate language");
   // }
   const insertQuery =
-    "INSERT INTO comments(body, pendingModeration) VALUES(?,?)";
-  const values = [comment, pendingModeration];
+    "INSERT INTO comments(body, pendingModeration, accountId) VALUES(?,?, ?)";
+    //console.log(comment)
+  const values = [body, pendingModeration, accountId];
   const insertQuery2 = "INSERT INTO commentThread VALUES(?,?)";
-
-  let insertedId = null;
   db.query(insertQuery, values, (err, result) => {
     if (err) {
       console.log(err);

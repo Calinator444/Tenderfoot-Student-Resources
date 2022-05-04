@@ -3,17 +3,20 @@ import Axios from 'axios';
 import TextEditor from './TextEditor';
 import {Button, Form} from 'react-bootstrap';
 import {useLocation} from 'react-router-dom';
+import { useSelector } from 'react-redux';
 
 
 import {URLSearchparams, useParams} from "react-router-dom"
 import { Title } from '@mui/icons-material';
 function ArticleView() {
+
+
+  const store = useSelector(state => state)
   const location = useLocation();
   const {title} = useParams()
   //const {textBodyId} = location.state;
-  const [readOnly, setReadOnly] = useState(false)
-  const [article, setArticle] = useState([])
-  const [adminPrivileges, setAdminPrivileges] = useState(true)
+  const [article, setArticle] = useState([]) 
+  const [adminPrivileges, setAdminPrivileges] = useState(false)
   const [video, setVideo] = useState([])
   useEffect(
     ()=>{
@@ -22,7 +25,14 @@ function ArticleView() {
         setArticle(res.data)
         console.log(res.data)
       })
-      console.log("testimonialView reached")
+
+      if(store)
+      {
+        if(store.permissionLevel == "admin")
+        {
+          setAdminPrivileges(true)
+        }
+      }
        //console.log(`textBodyId : ${title}`)
     },[]
   )
@@ -39,7 +49,7 @@ function ArticleView() {
     return(
     <>
     <h1>{title}</h1>
-    <TextEditor readOnly threadID={textBodyId}/>
+    <TextEditor readOnly={!adminPrivileges} showControls={adminPrivileges} threadID={textBodyId}/>
     </>
     )})
 

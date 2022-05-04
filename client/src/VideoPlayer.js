@@ -38,6 +38,9 @@ function VideoPlayer() {
       //Causes crash
     });
 
+
+    
+
   }, []);
   return (
     <>
@@ -93,11 +96,11 @@ function VideoPlayer() {
         
         }
         <Thread threadID={selectedThread}/>
-        <footer style={{ height: "4rem" }}>
+        {/* <footer style={{ height: "4rem" }}>
           <i>
             <p style={{ margin: "1rem" }}>&copy;University of Newcastle 2022</p>
           </i>
-        </footer>
+        </footer> */}
       </div>
     </>
   );

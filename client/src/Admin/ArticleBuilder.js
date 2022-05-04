@@ -1,9 +1,18 @@
-import React, {useState, useRef, useImperativeHandle} from 'react'
+import React, {useState, useRef, useImperativeHandle, useEffect} from 'react'
 import {Form, Button} from 'react-bootstrap'
 import TextEditor from "../TextEditor"
 import Mainnav from "../reactcomponents/Mainnav"
+import {Redirect} from "react-router-dom"
+
 function ArticleBuilder() 
 {
+
+useEffect(()=>{
+    const adminStatus = sessionStorage.getItem("permission_level")
+    
+
+    console.log(adminStatus)
+}, [])
 const [articleState, setArticleState] = useState(
     {title : '',
     description: '',
@@ -49,7 +58,10 @@ const handleStateChange = (e)=>{
 
             </Form.Control>
             </Form.Group>
-        </Form>
+
+
+        
+        
         <Form.Label>Article body</Form.Label>
         <TextEditor showControls={false} title={title} description={description} readOnly={false} myRef={myRef} category="article" publishingMode/>
         {/* <Button onClick={()=>{
@@ -58,6 +70,10 @@ const handleStateChange = (e)=>{
         {/* <Button onClick={()=>{console.log(window.editorState)}}> {/*using window to store a global 
             Log stuff
         </Button> */}
+        </Form>
+                <iframe width="600" height="420" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" src="https://use.mazemap.com/embed.html#v=1&config=UoNCampus&zlevel=2&center=151.706167,-32.891064&zoom=18&campusid=117&utm_medium=iframe" style={{"border": "1px solid grey"}} allow="geolocation"></iframe><br/><small><a href="https://www.mazemap.com/">Map by MazeMap</a></small>
+
+
     </div>
     </>
   )

@@ -31,7 +31,7 @@ function TestimonialList(props) {
             {articles.map((values)=>{
 
                 
-                const {title, textBodyId} = values;
+                const {title, textBodyId, summary} = values;
                 console.log(`textBodyId ${textBodyId}`)
                 return(
                 <li>
@@ -45,7 +45,7 @@ function TestimonialList(props) {
                     <Link to={`/ArticleView/${title}`}
                 ><h3>{title}</h3></Link>
 
-                <p>This is an example paragraph</p>
+                <p>{summary}</p>
                 
                 </div>
                 </li>)

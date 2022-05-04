@@ -5,17 +5,23 @@ import loginprofile from "./resources/loginprofile.png";
 import { Button, Alert, Card, Form, Container, Image } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
 import axios from "axios";
+import {useDispatch, useSelector} from "react-redux";
 //import { useHistory } from "react-router-dom";
 import Axios from "axios";
 import { React, useEffect, useState, NavBar } from "react";
+import { ContactSupportOutlined } from "@mui/icons-material";
 
-function Login() {
+function Login(props) {
   const [loginSuccess, setLoginSuccess] = useState(false);
-
+  const {setLoginStatus} = props;
+  const store = useDispatch(state => state)
+  const dispatch = useDispatch();
   //userName and password are kept in variables which update whenever the form details are altered
   const [userName, setUserName] = useState("");
   const [passWord, setPassword] = useState("");
   const [loginAttempt, setLoginAttempt] = useState(0);
+
+  
   const encryptData = (message) => {
     var crypto = require("crypto");
     var mykey = crypto.createCipher("aes-128-cbc", "mypassword"); //create cypher deprecated but still works?
@@ -25,41 +31,87 @@ function Login() {
     return mystr;
   };
 
+  useEffect(()=>{
+    //changeHandler(2)
+  },[])
+
   const attemptLogin = () => {
+    Axios.get(`http://localhost:3001/api/get/account/${userName}`).then((res)=>{
+      //console.log(res)
+      //console.log(window.loggedStatus)
+
+      if(res.data.length > 0)
+      {
+
+        const {adminPrivileges,username, password, accountId } = res.data[0]
+
+        
+
+        if(password == passWord)
+        {console.log(`${passWord} == ${password}`)
+        //console.log(adminPriveleges)
+        //window.loggedStatus = {username:username, adminPriveleges: adminPriveleges}
+        console.log(`adminPrivieleges was set to: ${adminPrivileges}`)
+
+
+        //sessionStorage.setItem("permission_level", "admin")
+        //sessionStorage.setItem("user_name", username)
+        //setLoginState({username: username, permissionLevel: adminPriveleges})
+        console.log(sessionStorage.getItem("permission_level"))
+        var adminLevel = (adminPrivileges == 1) ? "admin" : "standard"
+        console.log(adminPrivileges)
+
+        //can't read payload?
+        dispatch({type: "login", payload: {username: username, permissionLevel: adminLevel, userId: accountId}})
+        setLoginStatus(true)
+        setLoginAttempt(3)}
+        else {
+          setLoginAttempt(1)
+        }
+      }
+      else
+        {console.log("errro response from server")
+        setLoginAttempt(2)}
+    })
+
+
+    //DEPRECATED
     //console.log('attempting login');
     //var loginAttempt = encrypt(userName);
 
-    console.log(`http://localhost:3001/api/select/${encryptData(userName)}`);
-    axios
-      .get(`http://localhost:3001/api/select/${encryptData(userName)}`)
-      .then((res) => {
-        console.log("axios.get fired");
-        if (res.data.length > 0) {
-          //console.log(res.data[0].pWord);
-          var password = res.data[0].pWord; //pword cannot be invoked when res.data is stored in a variable
-          if (password.localeCompare(passWord) == 0) {
-            //console.log("login successful");
-            //history.push('/Home')
-            setLoginAttempt(3);
-          } else {
-            console.log("password does not match username");
-            setLoginAttempt(1);
-          }
-          //console.log(password.localeCompare(passWord) == 0);//primitives can be compared using "==" presumably
-        } else {
-          setLoginAttempt(2);
-          console.log("that username does not eist");
-        }
-        //console.log("axios request complete")
-      });
+    // console.log(`http://localhost:3001/api/select/${encryptData(userName)}`);
+    // axios
+    //   .get(`http://localhost:3001/api/select/${encryptData(userName)}`)
+    //   .then((res) => {
+    //     console.log("axios.get fired");
+    //     if (res.data.length > 0) {
+    //       //console.log(res.data[0].pWord);
+    //       var password = res.data[0].pWord; //pword cannot be invoked when res.data is stored in a variable
+    //       if (password.localeCompare(passWord) == 0) {
+    //         //console.log("login successful");
+    //         //history.push('/Home')
+    //         setLoginAttempt(3);
+    //       } else {
+    //         console.log("password does not match username");
+    //         setLoginAttempt(1);
+    //       }
+    //       //console.log(password.localeCompare(passWord) == 0);//primitives can be compared using "==" presumably
+    //     } else {
+    //       setLoginAttempt(2);
+    //       console.log("that username does not eist");
+    //     }
+    //     //console.log("axios request complete")
+    //   });
   };
 
   //let history = useHistory();
   return (
-    <Container>
+    <div id='main-content' className="white-mainclass" style={{overflowY: 'auto'}}>
+    {/* <Container> */}
+            <h1 style={{marginLeft : '0px', textAlign: 'center'}}>Login</h1>
+
       <div className="text-center">
-        <h1>Login</h1>
-        <Image src={loginprofile} alt="book-stack" roundedCircle />
+        <Image src={loginprofile} alt="profile" roundedCircle />
       </div>
       <div className="row justify-content-center">
         {
@@ -98,9 +150,6 @@ function Login() {
               }}
               placeholder="Username"
             ></Form.Control>
-            <Form.Text className="text-muted">
-              Your username is the email you registered with
-            </Form.Text>
           </Form.Group>
 
           <Form.Group>
@@ -119,10 +168,11 @@ function Login() {
               <a href="">Forgot Password</a>
             </p>
           </Form.Group>
-          <Button onClick={attemptLogin}>Submit</Button>
+          <Button onClick={attemptLogin}>Log in</Button>
         </Form>
       </div>
-    </Container>
+    {/* </Container> */}
+    </div>
   );
 }
 
