@@ -30,7 +30,7 @@ function Map() {
 
 
         {/* ThreadID was set manually here because existing pages created by the product owner are created manually, unlike testimonials */}
-        <TextEditor threadID={4} readOnly={!adminMode} showControls={adminMode}/>
+        <TextEditor textBodyId={4} readOnly={!adminMode} showControls={adminMode}/>
         {/* <article>
 
           <h2>Your first day on campus</h2>

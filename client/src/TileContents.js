@@ -6,7 +6,7 @@ export const TileContents= [{
     body:"Keep track of all the work you'll need to get done before the semester gets too busy. You can do so using the todo list we've built for you.",
     title: "todo-list",
     backgroundImage: todo,
-    link: '#'
+    link: '/Todolist'
 },
 {
     title: "Testimonials",

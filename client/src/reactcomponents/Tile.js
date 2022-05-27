@@ -3,7 +3,7 @@ import {Button} from 'react-bootstrap'
 import {LinkContainer} from 'react-router-bootstrap'
 function Tile(props) {
 
-    const {description, title, link, backgroundImage} = props;
+    const {description, title, link, backgroundImage, btnDisabled} = props;
   return (
     <div className="tile" style={{backgroundImage : `url(${backgroundImage})`}}>
 
@@ -11,7 +11,7 @@ function Tile(props) {
             <p>{props.children}</p>
 
             <LinkContainer to={link ? link : "#" }>
-              <Button variant="dark">Click here</Button>
+              <Button variant={btnDisabled ? "dark":"primary"}>Click here</Button>
             </LinkContainer>
     </div>
     

@@ -35,7 +35,12 @@ function VideoPlayer() {
     Axios.get("http://localhost:3001/api/get/videos").then((res) => {
       // console.log(res);
       setVideos(res.data);
-      //Causes crash
+
+      console.log(res.data)
+
+
+      //might cause an infinite render loop
+      setSelectedThread(res.data[0].threadID)
     });
 
 
@@ -75,14 +80,15 @@ function VideoPlayer() {
                     className={
                       selectedIndex == index ? "highlighted" : "listed"
                     }
+                    onClick={() => {
+                        setVideoState(videoLink, index);
+                      }}
                   >
                     <p className="video-link">{videoTitle}</p>
                     <img
                       src={videoThumbnail}
                       alt="thumbnail"
-                      onClick={() => {
-                        setVideoState(videoLink, index);
-                      }}
+                      
                       className="preview-img"
                     />
                   </li>

@@ -14,11 +14,11 @@ function TestimonialList() {
 
   return(
       <>
-      <Mainnav/>
+      {/* <Mainnav/> */}
         <div className='white-mainclass' id="main-content">
 
 
-        <ListGeneric dataset={data}/>
+        <ListGeneric dataset={data} testimonials/>
     </div>
     </>
   )

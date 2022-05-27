@@ -11,9 +11,15 @@ import logo from '../resources/books.png'
 import React, {useState, useEffect} from 'react';
 import { Container, Nav, Navbar, NavDropdown } from 'react-bootstrap';
 import {useSelector, useDispatch} from "react-redux"
+
+
+import { useNavigate } from "react-router";
 import axios from "axios";
 
 function Mainnav(props) {
+
+
+const navigate = useNavigate()
 const dispatch = useDispatch()
 
 const {loginStatus, setLoginStatus} = props
@@ -24,6 +30,7 @@ const logout = ()=>{
   dispatch({type: "logout", payload: {}})
   console.log("logout fired")
   setLoginStatus(false)
+  navigate('/')
 }
 const [userInfo, setUserInfo] = useState({
   username: "guest",
@@ -34,43 +41,20 @@ const [userInfo, setUserInfo] = useState({
 
     console.log("useEffect inside mainnav fired")
 
-
+    
     console.log(`loginstatus has a value of ${loginStatus}`)
     if(store)
     {
-      console.log("if statement fired")
-
-
-      console.log(`permission level inside store: ${store.permissionLevel}`)
       let userInf = {...loginStatus, permissionLevel: store.permissionLevel, username: store.username}
       setUserInfo(userInf)
-      console.log(`permission level: ${store.permissionLevel}`)
     }
-    console.log('useEffect inside Mainnav fired')
-    //setAccountDetails({username: username, permissions: permissions})
-
-    //const {username, permissionLevel} = getValue;
-
-    //console.log(`username: ${getValue}`)
-
-//     if(window.loggedStatus == null)
-//     {
-      
-//   console.log('logStatus has been set')
-// }
-// else
-//   console.log('else statement')
-//     console.log(window.loggedStatus)
-
-
-    console.log(userInfo.permissionLevel)
   },[loginStatus])
 return(
 <Navbar bg="dark" expand="lg" variant="dark">
   <Container>
     <Navbar.Brand><img src={logo} height="60" width="60"/></Navbar.Brand>
     <LinkContainer to="/">
-    <Navbar.Brand href="#home">Tenderfoot {(userInfo.permisisonLevel == "admin") ?  "asda" : false}</Navbar.Brand>
+    <Navbar.Brand href="#home">Tenderfoot</Navbar.Brand>
     </LinkContainer>
     <Navbar.Toggle aria-controls="basic-navbar-nav" />
     <Navbar.Collapse>
@@ -95,7 +79,7 @@ return(
           <LinkContainer to="/Admin/TestimonialBuilder">
             <NavDropdown.Item>Testimonial Builder</NavDropdown.Item>
           </LinkContainer>
-          <LinkContainer to="/Admin/ArtileBuilder">
+          <LinkContainer to="/Admin/ArticleBuilder">
             <NavDropdown.Item>ArticleBuilder</NavDropdown.Item>
           </LinkContainer>
 
@@ -105,8 +89,11 @@ return(
 
 
         loginStatus ?
-        <NavDropdown title={store.username}>
+        <NavDropdown title={store.username == "admin" ? "Logout": store.username}>
           <NavDropdown.Item onClick={logout}>Logout</NavDropdown.Item>
+          <LinkContainer to="Accounts/PasswordReset">
+            <NavDropdown.Item>Reset password</NavDropdown.Item>
+          </LinkContainer>
         </NavDropdown>
         // <LinkContainer to="/Login">
         //   <Nav.Link>Login</Nav.Link>

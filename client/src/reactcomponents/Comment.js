@@ -5,6 +5,7 @@ import {Form, Button} from 'react-bootstrap'
 import { useSelector } from "react-redux";
 
 import Axios from 'axios';
+import {compareDates} from '../Functions/dateArithmethic'
 function Comment(props) {
   const {replySetter} = props
   const store = useSelector(state => state)
@@ -12,7 +13,16 @@ function Comment(props) {
   const [middleStatement, setMiddleStatement] = useState('');
   const { username, body, commentId, timePosted } = props;
   const [replyContent, setReplyContent] = useState('')
+
+
+
+
   const replyRef = useRef(null);
+  const replyBox = useRef(null)
+
+
+
+
   // compareDates(timePosted)
   const getHours = timePosted.getHours()
   const date = {
@@ -49,32 +59,36 @@ function Comment(props) {
     Axios.post("http://localhost:3001/api/addReply", 
     {id: commentID, body: replyContent, accountId: store.userId}).then((res)=>{
       console.log(res.data)
-      const mapping = res.data.map(({ body: replyBody, commentID,replyAccount }) => ({replyBody,commentID, replyAccount}));
+      const mapping = res.data.map(({ body: replyBody, commentID,replyAccount,dateAdded }) => ({replyBody,commentID, replyAccount, dateAdded}));
       replySetter(mapping)
 //console.log(transformed);
     })
+    replyRef.current.style.display="none"
+    resetReply();
     // {body: JSON.stringify(body)});
   }
 
-
-  const compareDates = (date)=>
-  {
-
-    const currentDate = new Date();
-    const dateArgument = new Date(`${date.getMonth() +1 }/${date.getDate()}/${date.getFullYear()}`)//we need to apply an offset here because the date from the database is incorrect by 1 month
-    const currentDateFormatted = new Date(`${currentDate.getMonth()+1}/${currentDate.getDate()}/${currentDate.getFullYear()}`)
-    console.log(dateArgument);
-    console.log(currentDateFormatted)
-    const difference = Math.abs(currentDateFormatted - dateArgument);
-    console.log(`data for comment: ${body}`)
-    console.log(`Difference in millisecons${difference}`)
-    const daysDifference = Math.ceil(difference / (1000 * 60 * 60 * 24)); 
-    console.log(`Difference in days${daysDifference}`)
-
-
-    return daysDifference;
-
+  const resetReply = ()=>{
+    replyBox.current.value = ''
   }
+  // const compareDates = (date)=>
+  // {
+
+  //   const currentDate = new Date();
+  //   const dateArgument = new Date(`${date.getMonth() +1 }/${date.getDate()}/${date.getFullYear()}`)//we need to apply an offset here because the date from the database is incorrect by 1 month
+  //   const currentDateFormatted = new Date(`${currentDate.getMonth()+1}/${currentDate.getDate()}/${currentDate.getFullYear()}`)
+  //   console.log(dateArgument);
+  //   console.log(currentDateFormatted)
+  //   const difference = Math.abs(currentDateFormatted - dateArgument);
+  //   console.log(`data for comment: ${body}`)
+  //   console.log(`Difference in millisecons${difference}`)
+  //   const daysDifference = Math.ceil(difference / (1000 * 60 * 60 * 24)); 
+  //   console.log(`Difference in days${daysDifference}`)
+
+
+  //   return daysDifference;
+
+  // }
 
 
   useEffect(()=>{
@@ -103,13 +117,20 @@ function Comment(props) {
       
         <div className="time-posted">{`Posted: ${middleStatement} at ${hour}:${minutes < 10 ? "0" : ""}${minutes}${meridian}`}</div>
         <div className="comment-actions">
-        
+        {/* does nothing rn */}
         <span>Report</span>
+
+
+
+        {store != null ? 
         <span onClick={()=>{
 
         
           replyRef.current.style.display="block";
         }}>Reply</span>
+        :
+        ''
+        }
         </div>
         </section>
       
@@ -120,6 +141,7 @@ function Comment(props) {
               <Form.Control
                 as="textarea"
                 rows={3}
+                ref={replyBox}
                 placeholder={"Replying to "+username}
                 onChange={(e) => {
                   setReplyContent(e.target.value);
@@ -130,7 +152,7 @@ function Comment(props) {
       <Button className="replyButton"onClick={()=>{
         postReply(commentId)
       }}>Post</Button>
-      <Button className="replyButton">Cancel</Button>
+      <Button className="replyButton" onClick={()=>{replyRef.current.style.display="none";resetReply()}}>Cancel</Button>
       </div>
       
       </>

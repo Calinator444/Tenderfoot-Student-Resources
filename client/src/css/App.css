@@ -57,7 +57,7 @@ div.forumPost {
 
 ul {
   padding-left: 0;
-
+  
   margin-top: 3rem;
 }
 
@@ -159,6 +159,11 @@ iframe {
 
 li.highlighted {
   background-color: rgb(53 81 84);
+}
+
+
+li.listed:hover, li.highlighted:hover{
+  cursor: pointer;
 }
 
 li.listed {
@@ -312,12 +317,16 @@ iframe{
   .tile-wrapper {
     grid-template-columns: auto auto;
   }
+    
   
 }
 @media only screen and (max-width: 900px) {
   /* .tile-wrapper {
     grid-template-columns: auto;
   } */
+
+
+
 
 
   #video-player{
@@ -348,6 +357,12 @@ iframe{
   font-size:small;
 }
 
+
+
+
+button {
+  margin: 10px;
+}
 svg{
   margin: 5px;
 }
@@ -462,14 +477,33 @@ section.admin-controls > *, .admin-publishing > * {
   height: 25vh;
 }
 
+
+.head > a {
+  text-decoration: none;
+  color: black;
+}
+
 .preview-content {
   margin-left: 20px;
+}
+
+.article-list-grid > li > p{
+  padding-top:20px;
+  padding-left: 30px;
 }
 
 
 .article-list-grid{
   display: grid;
   grid-template-columns: auto auto;
+}
+
+@media only screen and (max-width: 900px)  {
+
+  .article-list-grid {
+    grid-template-columns: auto;
+  }
+  
 }
 /* Used for displaying articles */
 .article-list-grid, .article-list{
@@ -485,6 +519,19 @@ section.admin-controls > *, .admin-publishing > * {
   flex-direction: column;
 }
 
+
+/*react has default styling options that remove styling when the the 'a' element is missing an 'href' prop*/
+.override-href {
+  color: #0d6efd;
+  text-decoration: underline;
+
+}
+
+
+.override-href:hover {
+  cursor: pointer;
+}
+
 .preview-content > a{
   color: black;
   text-decoration: none;
@@ -497,15 +544,93 @@ section.admin-controls > *, .admin-publishing > * {
   margin-right: auto;
 }
 
-.article-list > li , .article-list-grid > li{
+
+
+
+
+
+.article-list-grid > li > .head {
   display: flex;
   justify-content: flex-start;
+}
+
+
+.article-list-grid > li > div > p {
+  color:rgb(116 116 116)
+}
+.article-list > li , .article-list-grid > li{
+  /* display: flex;
+  justify-content: flex-start; */
 
   margin-bottom: 20px;
   width: 50%;
 }
+
+
+.article-list-grid > li {
+  box-shadow: 0 0 6px 4px rgb(92 92 92 / 10%);
+  width: 400px;
+  height: 200px;
+}
 .thumbnail {
   min-width:100px;
+  background-size: 100%;
+}
+
+
+
+.media-container {
+  display: grid;
+  grid-template-columns: auto auto auto;
+  margin-left: auto;
+  height: 500px;
+  width: 600px;
+  overflow-y: scroll;
+  margin-right: auto;
+}
+
+@media only screen and (max-width: 1200px) {
+  .media-container{
+    grid-template-columns: auto auto;
+    width: 400px;
+  }
+}
+
+
+.link-container:hover {
+  /* display: block; */
+  /* width: 200px; */
+  opacity: 1;
+  /* height: 200px; */
+  cursor: pointer;
+
+} 
+.link-container {
+
+  width: 200px;
+  height: 200px;
+  background-color: rgba(0, 0, 0, 0.74);
+  display: flex;
+  opacity: 0;
+
+
+
+
+  box-shadow: inset 0 0 60px #000000;
+
+  justify-content: center;
+  align-items: center;
+  /* display: none; */
+
+} 
+
+
+
+.link-container > span {
+  /* padding: 100px; */
+  color: white;
+  opacity: 100;
+
 }
 
 footer {
@@ -531,4 +656,30 @@ footer {
 .rdw-dropdown-wrapper > * {
   text-decoration: none;
   color: #000000;
+}
+
+
+
+
+.rdw-editor-main {
+  margin-left: 50px;
+  margin-right: 50px;
+  /* removes scrollbar which appears at bottom of text editor */
+  overflow-x: hidden;
+}
+
+
+
+.sign-in-promo {
+  padding: 30px;
+  width: 100%;
+  height: 100%;
+  background-image: linear-gradient(125deg, #924aa4, #4175fc);
+  color: white;
+  
+}
+
+/* WHY DOES REACT REMOVE THE  */
+.sign-in-promo > ul > li{
+  padding: 10px;
 }

@@ -1,6 +1,7 @@
 //used for building student testimonials
 import {Form, Tooltip, Col, Row, Button} from 'react-bootstrap'
 
+import {convertToRaw, EditorState} from 'draft-js'
 
 import Mainnav from '../reactcomponents/Mainnav';
 import Axios from 'axios'
@@ -13,6 +14,11 @@ import React, {useState, useEffect, useRef} from 'react'
 
 //import {uploader} from 'youtube-videos-uploader'
 function TestimonialBuilder() {
+
+
+    const [editorState, setEditorState] = useState(
+      ()=>EditorState.createEmpty(),
+    )
     const uploadVideo = ()=>{
       //uploadVideo(Credentials, [{}])
       
@@ -21,10 +27,9 @@ function TestimonialBuilder() {
       videoData.append("videoFile", videoFile)
       videoData.append("title", videoTitle)
       videoData.append("description", videoDescription)
-
-
-      
-      Axios.post("http://localhost:3001/api/uploadVideo", videoData).then((response) =>{
+      videoData.append("testimonialTitle", title )
+      videoData.append("testimonialBody", JSON.stringify(convertToRaw(editorState.getCurrentContent())))
+      Axios.post("http://localhost:3001/api/uploadTestimonial", videoData ).then((response) =>{
         console.log(response.data)
       })
 
@@ -45,6 +50,10 @@ function TestimonialBuilder() {
     const [videoMode, setVideoMode] =  useState(true)
     const [videoFile, setVideoFile] = useState("")
     const [videoDescription, setVideoDescription] = useState('')
+    const [title, setTitle] = useState('');
+
+
+
     useEffect(()=>{
         //console.log()
         console.log("correct page loaded")
@@ -65,12 +74,13 @@ function TestimonialBuilder() {
         
         <Form.Group as={Col} className='mb-3'>
           <fieldset>
-          <legend>Standard controls</legend>
+          <legend>Article Settings</legend>
           <Form.Label>
             Title
           </Form.Label>
           <Form.Control type="text" placeholder='title' onChange={(e)=>{
-            setVideoTitle(e.target.value)
+            // setVideoTitle(e.target.value)
+            setTitle(e.target.value)
           }}>
           </Form.Control>
           <Form.Text className="text-muted">
@@ -135,7 +145,7 @@ function TestimonialBuilder() {
       </Form>
       
       {/* This is a text editor, the readOnly state would never change because this information is never displayed to regular site visitors */}
-      <TextEditor style={{border: '1px solid black'}} readOnly={false}/>
+      <TextEditor style={{border: '1px solid black'}} readOnly={false} overrideState={editorState} stateHandler={setEditorState}/>
 
 
       {/* Why do I have to apply formatting when I'm using react-booststrap lol */}
