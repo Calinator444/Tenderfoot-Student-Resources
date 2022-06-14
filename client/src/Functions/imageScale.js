@@ -2,7 +2,7 @@
 
 
 //returns appropriate scale settings for a thumbail image
-const scaleThumbnail = (fileDirectory, size)=>{
+const scaleThumbnail = (fileDirectory, size = 200)=>{
           let img = new Image()
           img.src = `http://localhost:3001/images/${fileDirectory}`
 
@@ -15,18 +15,12 @@ const scaleThumbnail = (fileDirectory, size)=>{
 
           const dimensions = [height,width]//X, Y
           const aspectRatio = height / width;
-
-
-
-
           const smallestIndex = 0;
           const largestIndex = 0;
 
           var scaleFactor;
           var customHeight;
           var customWidth;
-
-
           if(height > width)
           {
             console.log('height greater than width')

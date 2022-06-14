@@ -24,11 +24,10 @@ const dispatch = useDispatch()
 
 const {loginStatus, setLoginStatus} = props
 
-
+const [loggedIn, setLoggedIn] = useState(false)
 const store = useSelector(state => state)
 const logout = ()=>{
   dispatch({type: "logout", payload: {}})
-  console.log("logout fired")
   setLoginStatus(false)
   navigate('/')
 }
@@ -38,7 +37,16 @@ const [userInfo, setUserInfo] = useState({
 })
 
   useEffect(()=>{
-
+    if(store)
+    {
+      if(store.username)
+        setLoggedIn(true)
+      else
+        setLoggedIn(false)
+    }
+    else
+      setLoggedIn(false)
+      
     console.log("useEffect inside mainnav fired")
 
     
@@ -62,7 +70,11 @@ return(
         <LinkContainer to="/">
           <Nav.Link href="#link">Home</Nav.Link>
         </LinkContainer>
-        <Nav.Link href="Map">Map</Nav.Link>
+
+
+        <LinkContainer to="/ArticleView/Maze%20map">
+          <Nav.Link>Map</Nav.Link>
+        </LinkContainer>
         {/* <Nav.Link href="#link">Forums</Nav.Link> */}
 
 
@@ -71,7 +83,6 @@ return(
         </LinkContainer>
 
 
-        {console.log(`permission level was set to: ${userInfo.permissionLevel}`)}
          <NavDropdown  style={{ display: (userInfo.permissionLevel == "admin") ? 'inline' : 'none'}} title="Admin Controls">
 
             
@@ -104,9 +115,14 @@ return(
         </LinkContainer>
       }
         {/* </NavDropdown> */}
+
+
+
+
+      { loggedIn ?
       <LinkContainer to="/TodoList">
         <Nav.Link>Todo-list</Nav.Link>
-      </LinkContainer>
+      </LinkContainer> :<></>}
       </Nav>
     </Navbar.Collapse>
 

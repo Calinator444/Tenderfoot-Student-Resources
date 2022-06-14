@@ -29,6 +29,9 @@ import {useSelector} from "react-redux"
 import ArticleList from './Testimonials/ArticleList'
 import CreateAccount from "./AccountCreation/CreateAccount";
 import NotFound from "./NotFound";
+
+
+import VideoUpload from './Admin/VideoUpload';
 import { BrowserRouter, Route, Routes, Router, Link } from "react-router-dom";
 import { React, useEffect, useState } from "react";
 
@@ -85,7 +88,7 @@ function App() {
       }
         <Routes>
 
-        <Route path="/" element={<Home/>}>
+        <Route path="/" element={<Home loginStatus={loginStatus}/>}>
         </Route>
 
 
@@ -94,6 +97,7 @@ function App() {
         <Route path="/Admin/TestimonialBuilder" element={<TestimonialBuilder/>}/>
         <Route path="/Admin/ArticleBuilder" element={<ArticleBuilder/>}/>
         <Route path="/Admin/Home" element={<AdminHome/>}/>
+        <Route path='/Admin/VideoPublishing' element={<VideoUpload/>}/>
 
 
         {/* We pass the setter so that child elements can modify the parent state */}
@@ -109,7 +113,7 @@ function App() {
         <Route path='/ArticleView/:title' element={<ArticleView/>}/>
         <Route exact path="/Testimonials/TestimonialList" element={<TestimonialList/>}/>
 
-
+        <Route exact path='/Admin/Edit/Video/:getVideoId' element={<VideoUpload/>}/>
 
 
         <Route exact path='/Testimonials/:title' element={<TestimonialView/>}/>

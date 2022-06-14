@@ -179,10 +179,13 @@ li.listed {
   background-color: rgb(12 19 20);
   list-style-type: none;
   display: flex;
+  overflow-y: scroll;
+  overflow-x: hidden;
 }
 .video-list > ul {
   list-style-type: none;
   width: 20vw;
+  height: fit-content;
 }
 
 .video-link {
@@ -263,10 +266,17 @@ fieldset{
 
 
 
+.carousel-caption {
+  background-color: rgb(0 0 0 / 73%);;
+}
 
+
+.btn-dark.disabled{
+  opacity: 1;
+}
 #main-content {
   /* When a div with a 'main-content' id is made part of the '.main-white' class the appropriate formatting is applied to child elements */
-  height: 100vh;
+  height: fit-content;
   /* prevents table from getting scrunched up at smaller window sizes */
   min-width: 400px;
   padding: 15px;
@@ -469,7 +479,8 @@ section.admin-controls > *, .admin-publishing > * {
   width: "auto";
   background-color: white;
   height: 100%;
-  overflow-x: scroll;
+  overflow-y: scroll;
+  overflow-x: hidden;
 }
 
 .comment-wrapper {
@@ -483,13 +494,12 @@ section.admin-controls > *, .admin-publishing > * {
   color: black;
 }
 
-.preview-content {
-  margin-left: 20px;
-}
+
 
 .article-list-grid > li > p{
-  padding-top:20px;
-  padding-left: 30px;
+  /* padding-top:20px;
+  padding-left: 30px; */
+  padding: 10px;
 }
 
 
@@ -575,6 +585,7 @@ section.admin-controls > *, .admin-publishing > * {
 .thumbnail {
   min-width:100px;
   background-size: 100%;
+  margin-right: 15px;
 }
 
 

@@ -70,7 +70,7 @@ function MediaLibrary() {
 
           const {height, width} = img
 
-          console.log(`height: ${height} width: ${width}`)
+          // console.log(`height: ${height} width: ${width}`)
           const largestSize = height > width ? 'height' : 'width'
 
           const dimensions = [height,width]//X, Y
@@ -89,21 +89,21 @@ function MediaLibrary() {
 
           if(height > width)
           {
-            console.log('height greater than width')
+            // console.log('height greater than width')
             scaleFactor = height/width
             customWidth = tileSize
             customHeight = customWidth * scaleFactor
           }
           else if(width > height)
           {
-            console.log('widht greater than height')
+            // console.log('widht greater than height')
             scaleFactor = width / height
             customHeight = tileSize
             customWidth = customHeight * scaleFactor
 
           }
           else if(width == height){
-            console.log('width == height')
+            // console.log('width == height')
             customHeight = tileSize
             customWidth = tileSize
           }

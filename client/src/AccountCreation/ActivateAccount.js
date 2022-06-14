@@ -31,7 +31,7 @@ function ActivateAccount() {
         })
     },[])
   return (
-    <div id="main-content" className='white-mainclass'>
+    <div id="main-content" className='white-mainclass' style={{overflowY: 'scroll', height: '100vh'}}>
 
         <h2>
             {message.title}

@@ -11,7 +11,9 @@ function Tile(props) {
             <p>{props.children}</p>
 
             <LinkContainer to={link ? link : "#" }>
-              <Button variant={btnDisabled ? "dark":"primary"}>Click here</Button>
+
+              {/* disabling the button decreases the opacity, so I manually increased it */}
+              <Button disabled={btnDisabled} variant={btnDisabled ? "dark":"primary"}>{btnDisabled ? 'You must log in first' : 'Click here'}</Button>
             </LinkContainer>
     </div>
     

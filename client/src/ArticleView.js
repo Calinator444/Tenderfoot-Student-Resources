@@ -5,7 +5,7 @@ import {Button, Form, Modal} from 'react-bootstrap';
 import {useLocation} from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import MediaLibrary from './reactcomponents/MediaLibrary';
-
+import Thread from './reactcomponents/Thread';
 import {useParams} from "react-router-dom"
 import { Title } from '@mui/icons-material';
 function ArticleView() {
@@ -20,6 +20,7 @@ function ArticleView() {
     message: ''
   })
 
+  const [threadId, setThreadId] = useState('')
 
 
 
@@ -37,7 +38,7 @@ function ArticleView() {
   useEffect(
     ()=>{
       console.log(`title: ${title}`)
-      // Axios.get(`http://localhost:3001/api/get/article/${title}`).then((res)=>{
+      // Axios.get(`http://localhost:3001/api/gaet/article/${title}`).then((res)=>{
       //   setArticle(res.data)
       //   console.log(res.data)
       // })
@@ -65,7 +66,7 @@ function ArticleView() {
 
   return (
     <>
-    <div id="main-content" className='white-mainclass'>
+    <div id="main-content" className='white-mainclass' style={{overflowX: 'scroll', height: '100vh'}}>
 
 
     {/* {article.map((val)=>{ */}
@@ -87,9 +88,12 @@ function ArticleView() {
       <Form.Control type='text'></Form.Control>
     </>
 
-      :
-    <h1>{title}</h1>
-     */}
+    :*/}
+
+
+
+    {adminPrivileges ? <></>:
+    <h1>{title}</h1>}
 
 
     {console.log(`read only was set to: ${!adminPrivileges}`)}
@@ -113,7 +117,7 @@ function ArticleView() {
       </Modal>
 
 
-    <TextEditor readOnly={!adminPrivileges} showControls={adminPrivileges} title={title} setErrorMessage={setErrorMessage}/>
+    <TextEditor setThreadId={setThreadId} readOnly={!adminPrivileges} showControls={adminPrivileges} title={title} setErrorMessage={setErrorMessage}/>
     {/* </> */}
     {/* ) */}
 
@@ -129,6 +133,12 @@ function ArticleView() {
     the TextEditor will pull the corresponding article from the database (I was tired when I coded this) */}
     
     </div>
+    <Thread threadID={threadId}/>
+
+
+
+
+    
     </>
   
   )

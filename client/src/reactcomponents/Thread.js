@@ -1,9 +1,10 @@
 import React, {useState, useEffect} from 'react'
 import Axios from 'axios';
+import { sliceComments } from '../Functions/threadActions';
 import {Form, Button, Modal} from 'react-bootstrap';
 import Comment from './Comment';
 import { compareDates, formatDate, formatTime } from '../Functions/dateArithmethic';
-
+import ErrorModal from './ErrorModal';
 
 import {useSelector} from 'react-redux';
 import { render } from 'react-dom';
@@ -14,40 +15,40 @@ function Thread(props) {
 
     //seperates the full response from the server into 2 seperate arrays of comments and replies respectively
 
-    const sliceComments = (fullArray)=>{
-      console.log('array inside slicedComments')
-      console.log(fullArray)
-      let tempReplies = [];
-      let tempComments = [];
-      for(let i = 0 ; i < fullArray.length; i++)
-      {
-        //splits the response from the server into 2 seperate arrays (replies and comments)
+    // const sliceComments = (fullArray)=>{
+    //   console.log('array inside slicedComments')
+    //   console.log(fullArray)
+    //   let tempReplies = [];
+    //   let tempComments = [];
+    //   for(let i = 0 ; i < fullArray.length; i++)
+    //   {
+    //     //splits the response from the server into 2 seperate arrays (replies and comments)
 
-        //could this array be causing the map?
-        console.log(`${fullArray[i].datePosted.split('T')[0]} ${fullArray[i].body}`)
-        console.log(`username is: ${fullArray[i].username}`)
-        tempComments.push({body: fullArray[i].body, username: fullArray[i].username, commentID: fullArray[i].commentID, timePosted: new Date(fullArray[i].datePosted)})
-        tempReplies.push({replyBody: fullArray[i].replyBody, dateAdded: fullArray[i].dateAdded, replyAccount: fullArray[i].replyAccount, commentID: fullArray[i].commentID})
-      }
+    //     //could this array be causing the map?
+    //     console.log(`${fullArray[i].datePosted.split('T')[0]} ${fullArray[i].body}`)
+    //     console.log(`username is: ${fullArray[i].username}`)
+    //     tempComments.push({body: fullArray[i].body, username: fullArray[i].username, commentID: fullArray[i].commentID, timePosted: new Date(fullArray[i].datePosted)})
+    //     if(!fullArray[i].replyModeration == 1)
+    //       tempReplies.push({replyBody: fullArray[i].replyBody, replyID: fullArray[i].replyID, dateAdded: fullArray[i].dateAdded, replyAccount: fullArray[i].replyAccount, commentID: fullArray[i].commentID})
+    //   }
 
-      let filteredArray = [...new Map(tempComments.map(x => [x['commentID'], x])).values()]
-
-
-      return {replies: tempReplies, comments: filteredArray}
+    //   let filteredArray = [...new Map(tempComments.map(x => [x['commentID'], x])).values()]
 
 
-
-    }
+    //   return {replies: tempReplies, comments: filteredArray}
 
 
 
+    // }
 
-    const flagComment = (commentId)=>{
-      Axios.patch("http://localhost:3001/flag/comment", {commentId: commentId }).then((res)=>{
-      
 
-      })
-    }
+
+    const [modalState, setModalState] = useState({
+      title: '',
+      message: '',
+      show: false
+    })
+
     const {threadID} = props;
     const [commentBody, setCommentBody] = useState('');
     const [replyArray, setReplyArray] = useState([]);
@@ -57,6 +58,23 @@ function Thread(props) {
 
     const [userDetails, setUserDetails] = useState({})
 
+    const flagReply = (replyID)=>
+      {
+        Axios.patch('http://localhost:3001/flag/reply', {flag: 1, replyID: replyID}).then((res)=>{
+
+          
+          if(res){
+            const mapping = res.data.map(({ body: replyBody, commentID,replyAccount,dateAdded,replyID }) => ({replyBody,commentID, replyAccount, dateAdded, replyID}))
+            //var getComments = sliceComments(res.data)
+            //const {replies, comments} = getComments
+            //setCommentArray(comments)
+            console.log(res.data)
+            setReplyArray(mapping)
+          }
+
+        })
+      }
+    
 
     const [loggedIn, setLoggedIn] = useState(false)
     let commentResponse = [];
@@ -65,6 +83,9 @@ function Thread(props) {
       //  console.log("username was defined")
       Axios.get(`http://localhost:3001/api/selectcomments/${threadID}`).then((res) => {
       let commentResponse = res.data
+      console.log('data')
+        console.log(res)
+      
       // let tempReplies = [];
       // let tempComments = [];
 
@@ -79,15 +100,15 @@ function Thread(props) {
 
       // let filteredArray = [...new Map(tempComments.map(x => [x['commentID'], x])).values()]
       // console.log("splitArray called")
-      console.log('rest was set to...')
-      console.log(res)
+      //console.log('rest was set to...')
+      //console.log(res)
 
 
       
       //will attaching a header affect this
       let splicedArray = sliceComments(res.data)
       const {comments, replies} = splicedArray;
-
+      
       setCommentArray(comments);
       setReplyArray(replies)
       //console.log(store.username == undefined)
@@ -117,12 +138,18 @@ function Thread(props) {
 
       if(store != null)
       {Axios.post(`http://localhost:3001/api/addcomment`, {threadID: threadID, body: commentBody, accountId : store.userId}).then((res)=>{
+        console.log('data')
         console.log(res.data)
         const splitArray = sliceComments(res.data.updatedComments)
         const {comments, replies} = splitArray;
 
 
         console.log('UPDATED VALUES SET TO:')
+        if(res.data.pendingModeration)
+        {
+          if(res.data.pendingModeration == 1)
+            setModalState({title: 'Your comment has been flagged', message: "Your comments has been flagged for a moderator to inspect. It likely contained coarse language", show: true})
+        }
         console.log(res.data.updatedComments)
         console.log(comments)
         console.log(replies)
@@ -138,7 +165,7 @@ function Thread(props) {
      return (
        <>
 
-
+{/* 
        <Modal show={flaggedError}>
         <Modal.Header closeButton>
           <Modal.Title>Your comment has been removed</Modal.Title>
@@ -150,7 +177,10 @@ function Thread(props) {
           </Button>
         </Modal.Footer>
       </Modal>
-      
+       */}
+
+
+    <ErrorModal errorMessage={modalState} setErrorMessage={setModalState}/>
     <section className="comment-wrapper">
           <div className="comment-section">
             <h2>Comments</h2>
@@ -188,14 +218,14 @@ function Thread(props) {
               const replies = replyArray.filter(x => x.commentID == commentID)
               return (
                 <>
-                  <Comment username={username} body={body} replySetter = {setReplyArray} commentId = {commentID} timePosted={timePosted}/>
+                  <Comment username={username} threadID={threadID} setModalState={setModalState} body={body} replySetter = {setReplyArray} commentSetter={setCommentArray} commentId = {commentID} timePosted={timePosted}/>
 
                   {
                   
                   
                   replies.map((replyData)=>{ 
 
-                    const {replyAccount, replyBody, dateAdded} = replyData
+                    const {replyAccount, replyBody, dateAdded, replyID} = replyData
                     console.log(`replyAccount was set to ${replyAccount}`)
                   if(!(replyBody == null))
                   {
@@ -240,7 +270,7 @@ function Thread(props) {
 
                       </div>
                       <div className='comment-actions'>
-                        <span>Report</span>
+                        <span onClick={()=>{flagReply(replyID)}}>Report</span>
                       </div>  
                     </div>
                   </div>

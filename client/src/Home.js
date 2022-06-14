@@ -19,14 +19,28 @@ import Tile from "./reactcomponents/Tile";
 
 import {Button, Form} from "react-bootstrap";
 
-function Home() {
+function Home(props) {
   const store = useSelector(state => state)
-
+  const {loginStatus} = props
   const dispatch = useDispatch()
   const [articles, setArticles] = useState([]);
-
+  const [loggedIn, setLoggedIn] = useState(false)
   useEffect(() => {
-
+    if(store)
+    {
+      if(store.username)
+      {
+        console.log(store.username)
+        setLoggedIn(true)
+      }
+      else
+        setLoggedIn(false)
+        
+    }
+    else
+    {
+      setLoggedIn(false)
+    }
 
     //dispatch({type: 'login', payload: {username: 'Caleb'}})
     //let store = useSelector(state => state.username)
@@ -35,7 +49,7 @@ function Home() {
       setArticles(res.data)
     
     })
-  }, []);
+  }, [loginStatus]);
 
 
 
@@ -82,10 +96,10 @@ function Home() {
         <div class="tile-wrapper" style={{backgroundColor: 'rgb(0 0 0 / 42%)', borderRadius: '10px'}}>
 
           {TileContents.map((val)=>{
-              const {body, title, backgroundImage, link} = val
+              const {body, title, backgroundImage, link, requireLogin} = val
 
               return (
-                <Tile title={title} backgroundImage={backgroundImage} link={link}>{body}</Tile>
+                <Tile title={title} backgroundImage={backgroundImage} btnDisabled={requireLogin && !loggedIn } link={link}>{body}</Tile>
               )
 
 

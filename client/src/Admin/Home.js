@@ -12,6 +12,8 @@ import { useNavigate } from 'react-router';
 //Visual studio code imported "response" for absolutely no reason    
 function Home()
 {
+
+
     const navigate = useNavigate()
     const [pageNumbering, setPageNumbering] = useState([])
     const [state, setState] = useState({
@@ -22,7 +24,7 @@ function Home()
 
 
 
-
+    const [videoData, setVideoData] = useState([])
     const flagAccount = (active, accountId)=>{
 
 
@@ -38,14 +40,23 @@ function Home()
 
     // const [activeTab, setActiveTab] = useState('commentModeration')
     const [pendingComments, setComments]= useState([]);
+
+
+    const [flaggedReplies, setFlaggedReplies] = useState([])
+
+
+
+    
     //will cause a 404 error because mapping has not been placed inside database script
     const approveComment = (id)=>{
         console.log("attempting to approve comment");
 
         const params = {body: 2};
-        Axios.patch('http://localhost:3001/flag/comment',{commentId: id, flag: 0})
+        Axios.patch('http://localhost:3001/flag/comment',{commentId: id, flag: 0}).then(()=>{
+            getFlaggedComments();
 
-        getFlaggedComments();
+        })
+
     }
 
 
@@ -60,7 +71,12 @@ function Home()
     });
     }
 
-
+    const flagReply = (replyID)=>{
+        Axios.patch('http://localhost:3001/flag/reply', {replyID: replyID, flag: 0, adminMode: 'adminMode'}).then((res)=>{
+            if(res)
+                setFlaggedReplies(res.data)
+        })
+    }
 
     useEffect(()=>{
     //const select = "SELECT * FROM comments WHERE pendingModeration = 1";
@@ -84,7 +100,7 @@ function Home()
             })
         }
         let itemIndex = 0;
-        for(let i = 0; i < res.data.length; i += 4)
+        for(let i = 0; i < res.data.length; i += 3)
         {   
             //console.log(`active index was set to: ${state.activeIndex}`)
             console.log(`item index: ${itemIndex}`)
@@ -103,6 +119,14 @@ function Home()
             )
             itemIndex++;
         }
+
+        Axios.get('http://localhost:3001/select/replies/flagged').then((res)=>{
+            if(res)
+                setFlaggedReplies(res.data)
+            else{
+                console.log('error retrieving replies')
+            }
+        })
         setPageNumbering(tempArray)
 
     })
@@ -124,11 +148,19 @@ function Home()
         setAccounts(res.data)
     })
 
+
+
+    Axios.get('http://localhost:3001/api/get/videos').then((res)=>{
+
+        console.log('video data response')
+        console.log(res.data)
+        setVideoData(res.data)
+    })
 }, [state])
 
 return (
 
-<div id="main-content" className='white-mainclass' >
+<div id="main-content" className='white-mainclass' style={{height: '100vh', overflowX: 'scroll'}}>
 <h1>Admin Portal</h1>
 
 {/* Will format this later */}
@@ -156,7 +188,7 @@ return (
                 return(
                     <tr>
                         <td>{title}</td>
-                        <td>{summary}</td>
+                        <td style={{minWidth: '200px'}}>{summary}</td>
                         <td>{videoLink}</td>
                         <td><span className='override-href' onClick={()=>{navigate(`/Testimonials/${title}`)}}>edit</span></td>
 
@@ -199,7 +231,7 @@ return (
             {
             
             
-            articleList.slice(state.activeArticleIndex * 4,(state.activeArticleIndex + 1) * 4).map((val)=>{
+            articleList.slice(state.activeArticleIndex * 3,(state.activeArticleIndex + 1) * 3).map((val)=>{
 
 
 
@@ -207,7 +239,7 @@ return (
                 return(
                     <tr>
                         <td>{title}</td>
-                        <td>{summary}</td>
+                        <td style={{minWidth: '200px'}}>{summary}</td>
                         <td onClick={()=>{navigate(`/ArticleView/${title}`)}}><span className='override-href'>edit</span></td>
                         {/* <td className='override-href' onClick={()=>{navigate(`/Testimonials/${title}`)}}>edit</td> */}
                         
@@ -229,6 +261,48 @@ return (
 
     <Button onClick={()=>{navigate('/Admin/ArticleBuilder')}}>+ Create new article</Button>
 </Col>
+</Row>
+
+
+
+
+
+<Row>
+
+
+    <h2>Videos</h2>
+    <Table striped bordered>
+
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Summary</th>
+                <th>Link</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+
+
+        <tbody>
+
+            {videoData.map((val)=>{
+                const {videoTitle, videoDescription, videoLink, videoID} = val
+                return(
+                    <tr>
+                        <td>{videoTitle}</td>
+                        <td>{videoDescription}</td>
+                        <td>{videoLink}</td>
+                        <td><span className='override-href' onClick={()=>{navigate(`/Admin/Edit/Video/${videoID}`)}}>Edit</span></td>
+                    </tr>
+                )
+            })}
+        </tbody>
+
+
+        {videoData.length == 0 ?
+        <p>No videos where found</p> : <></>
+    }
+    </Table>
 </Row>
 
 
@@ -288,9 +362,11 @@ return (
     <p>This page can be used to flag accounts which have shown any suspicious activity</p>
     <Table striped bordered>
         <thead>
-            <th>Username</th>
-            <th>Email address</th>
-            <th>Active</th>
+            <tr>
+                <th>Username</th>
+                <th>Email address</th>
+                <th>Active</th>
+            </tr>
         </thead>
 
         <tbody>
@@ -318,6 +394,38 @@ return (
 
     </Table>
     
+</Tab>
+<Tab eventKey='replyModeration' title='Flagged replies'>
+    <Table striped bordered>
+        <thead>
+            <tr>
+                <th>
+                    Body
+                </th>
+                <th>Action</th>
+            </tr>
+        </thead>
+
+        
+
+        
+        <tbody>
+            {flaggedReplies.map((val)=>{
+                
+                return(
+                <tr>
+                    <td>{val.body}</td>
+                    <td><Button variant='primary' onClick={()=>{flagReply(val.replyID)}}>Approve</Button></td>{/*add a callback here later*/}
+                </tr>)
+            })}          
+        </tbody>
+        
+        
+        {flaggedReplies.length > 0 ? <p></p>:
+        <p>There are no replies to display</p>}
+
+        
+    </Table>
 </Tab>
 </Tabs>
 </div>

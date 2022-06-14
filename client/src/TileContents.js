@@ -1,12 +1,15 @@
 
 import todo from "./resources/todo.jpg"
 import studentsgathered from "./resources/studentsgathered.jpg"
+import videoPlayer from './resources/how-to-videos.jpg'
 
 export const TileContents= [{
     body:"Keep track of all the work you'll need to get done before the semester gets too busy. You can do so using the todo list we've built for you.",
     title: "todo-list",
     backgroundImage: todo,
-    link: '/Todolist'
+    link: '/Todolist',
+    requireLogin: true
+
 },
 {
     title: "Testimonials",
@@ -17,7 +20,8 @@ export const TileContents= [{
 {
     title: "How-to-videos",
     body: "get a head start on your studies with the video guides we've created to help you navigate the univesity's various student resoruces",
-    link: "/videos"
+    backgroundImage: videoPlayer,
+    link: "/videos",
 }
 // {
 //     title: "Finding your way around campus",

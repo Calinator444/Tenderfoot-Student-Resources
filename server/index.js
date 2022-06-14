@@ -7,6 +7,8 @@
 //think of it like a java import statement
 
 
+//make like a git repository and git forked lmaOOOOOOO
+
 
 const nodemailer = require("nodemailer")
 
@@ -60,7 +62,10 @@ const todoQuery = "SELECT deadline, todoItemAccount.itemId, checked, description
 
 const credentials = require("./credentials.json")
 
-const commentSelectQuery =  "SELECT comments.body, dateAdded, datePosted, comments.commentID, replies.body AS replyBody FROM comments INNER JOIN commentThread ON commentThread.commentID = comments.commentId left JOIN replies ON replies.commentID = comments.commentID WHERE threadID = ? AND comments.pendingModeration = 0 ORDER BY datePosted DESC";
+
+
+//selects comments and replies for each respective comment
+const commentSelectQuery =  "SELECT accounts.username, comments.body, dateAdded, datePosted, comments.commentID, replies.body AS replyBody FROM comments INNER JOIN accounts ON accounts.accountId = comments.accountId INNER JOIN commentThread ON commentThread.commentID = comments.commentId left JOIN replies ON replies.commentID = comments.commentID WHERE threadID = ? AND comments.pendingModeration = 0 ORDER BY datePosted DESC";
 
 const oAuth = youtube.authenticate({
   type: 'oauth',
@@ -131,7 +136,69 @@ const {title, description, testimonialTitle} = req.body;
     res.send({status: 'success'})
 })
 
+//it's hard to explain why this works, when the front end selects videos that have a thread attached it knows that those videos are meant
+//to be show in the video player
+app.post('/api/upload/video/thread', upload.single("videoFile"), (req, res)=>{
+  const {videoTitle, videoLink, videoThumbnail, videoDescription} = req.body
 
+  //this is a terrible way to do this... but the presentation is due in 3 days so... rip
+
+
+  var params;
+  var query
+  if(req.file)
+  {
+    query = 'INSERT INTO videos(videoTitle) VALUES(?)';
+    params = [videoTitle]
+  }
+  else
+  {
+    query = 'INSERT INTO videos(videoLink, videoThumbnail, videoTitle) VALUES(?,?,?)'
+    params = [videoLink, videoThumbnail, videoTitle]
+  }
+
+    db.query(query, params, (err, result)=>{
+      if(!err){
+
+
+        db.query('INSERT INTO thread(threadID) VALUES(null)',(err2, result2)=>{
+        if(!err2)
+        {
+          db.query('INSERT INTO videoThread(threadID, videoID) VALUES(?,?)',[result2.insertId, result.insertId],(err3, result3)=>{
+            if(!err3){
+            if(req.file)
+            {
+                const filename = req.file.path  
+                const title = videoTitle
+                const description = videoDescription
+                open(oAuth.generateAuthUrl({
+                  access_type: 'offline',
+                  scope: 'https://www.googleapis.com/auth/youtube.upload',
+                  state: JSON.stringify({filename, title, description})
+                }))
+                 //res.send(result3)
+            }
+            res.send(result3)
+          } else(console.log(err3))
+
+           
+          }) 
+        }
+        else  console.log(err2)
+      }
+      )}
+      else
+      {
+        console.log(err)
+      }
+      })
+    })
+    // else if(videoLink)
+    // {
+    //   db.query('')
+    // }
+
+  
 
 
 
@@ -145,7 +212,22 @@ app.get('/get/media', (req, res)=>{
 })
 
 
+app.post('/update/testimonial/link', jsonParser, (req, res)=>{
+  const {videoLink, videoThumbnail, videoId} = req.body
+  db.query('UPDATE videos SET videoLink= ?, videoThumbnail = ? WHERE videoId = ?', [videoLink, videoThumbnail, videoId],(err,result)=>{
+    if(err)
+    {
+      console.log(err)
+      res.send(err)
+    }
+    else
+    {
+      res.send(result)
+    }
 
+  } )
+
+})
 
 app.post('/update/testimonial', upload.single('videoFile'),jsonParser, (req,res)=>{
   const {textBodyId, videoTitle, videoDescription} = req.body;
@@ -170,18 +252,38 @@ app.post('/update/testimonial', upload.single('videoFile'),jsonParser, (req,res)
 //app.patch('update/testimonial/video')
 
 app.post('/api/uploadTestimonial', upload.single("videoFile"),jsonParser, (req, res)=>{
-const {title, description, testimonialTitle, testimonialBody} = req.body;
+const {title, description, previewImage, testimonialTitle, testimonialBody, videoLink, videoThumbnail} = req.body;
 
 
-
-
-  db.query("INSERT INTO textBody(body, title, category) VALUES(?,?,'testimonial')", [testimonialBody, testimonialTitle],(err, result)=>{
+  db.query("INSERT INTO textBody(body, title, category, previewImage) VALUES(?,?,'testimonial', ?)", [testimonialBody, testimonialTitle, previewImage],(err, result)=>{
     if(err)
-      console.log(err)
+      {
+
+        //res.send must come before console log?
+        res.send(err)
+        console.log(err)
+        return
+        //console.log('error occurred in text body')
+        //console.log(err)
+        //res.send(err)
+        //return
+      }
       else {
       //we don't have the link for the video yet so we simply insert the title
       //we can re-use the title in the callback query 
-      db.query("INSERT INTO videos(videoTitle) VALUES(?)", [title.trim()], (err2, result2)=>{
+
+      var params;
+      var query;
+      if(videoLink)
+      { 
+        query = 'INSERT INTO videos(videoTitle, videoThumbnail, videoLink) VALUES(?,?,?)'
+        params = [title.trim(),videoThumbnail, videoLink]
+      }
+      else{
+        query = "INSERT INTO videos(videoTitle) VALUES(?)"
+        params = [title.trim()]
+      }
+      db.query(query, params, (err2, result2)=>{
         if(err2)
           console.log(err2)
         else
@@ -189,6 +291,7 @@ const {title, description, testimonialTitle, testimonialBody} = req.body;
 
 
           //textBodyVideo is used to assosciate written articles with videos. For instance, testimonials often contain written content as well as multimedia
+
           db.query('INSERT INTO textBodyVideo(textBodyId, videoId) VALUES(?,?)', [result.insertId, result2.insertId], (err3, result3)=>{
             if(err3){
 
@@ -196,7 +299,23 @@ const {title, description, testimonialTitle, testimonialBody} = req.body;
             }
             else 
             {
+              res.send(result3)
               console.log('Testimonial uploaded! were golden!')
+              if(!videoLink){
+                const filename = req.file.path
+  // if(req.file)
+  //   console.log('we found a file')
+  //return;
+  //else
+    // console.log('no file?')
+    //console.log(`title: ${title} description: ${description}`)
+
+            open(oAuth.generateAuthUrl({
+              access_type: 'offline',
+              scope: 'https://www.googleapis.com/auth/youtube.upload',
+              state: JSON.stringify({filename, title, description})
+            }))}
+            //res.send(result3)
             }
           })
         }
@@ -208,24 +327,12 @@ const {title, description, testimonialTitle, testimonialBody} = req.body;
       }
   })
   //console.log(req.body)
-  console.log(`testimonial title: ${testimonialTitle}`)
+  //console.log(`testimonial title: ${testimonialTitle}`)
 
-  console.log("upload video endpoint established")
-  console.log(`file destination was set to: ${req.file.destination}`)
+  //console.log("upload video endpoint established")
+  //console.log(`file destination was set to: ${req.file.destination}`)
   //return
-  const filename = req.file.path
-  // if(req.file)
-  //   console.log('we found a file')
-  //return;
-  //else
-    // console.log('no file?')
-    console.log(`title: ${title} description: ${description}`)
 
-    open(oAuth.generateAuthUrl({
-      access_type: 'offline',
-      scope: 'https://www.googleapis.com/auth/youtube.upload',
-      state: JSON.stringify({filename, title, description})
-    }))
 
 })
 
@@ -352,7 +459,7 @@ app.get('/oauthcallback', (req, res)=>{
     youtube.videos.insert({
       resource: {
         snippet: {title, description},
-        status: {privacyStatus: 'private'}
+        status: {privacyStatus: 'unlisted'}
       },
       part: 'snippet,status', 
       media: {
@@ -361,7 +468,7 @@ app.get('/oauthcallback', (req, res)=>{
 
     }, (err, data)=>{
       console.log("Done");
-
+      console.log(data)
 
       //youtube replies with a bunch of useful metadata once the video has been uploaded
       const videoId = data.data.id;
@@ -421,6 +528,7 @@ function hasCourseLanguage(word) {
 const { convertToRaw } = require("draft-js");
 const { threadId } = require('worker_threads');
 const { devNull } = require("os")
+const { off } = require("process")
 
 //app.use(bodyParser.urlencoded({ extended: false }))
 //app.use(bodyParser.json()
@@ -560,13 +668,26 @@ app.patch("/Account/Activate", jsonParser, (req, res)=>{
 
 })
 
+
+
+app.get('/select/replies/flagged', (req,res)=>{
+  db.query('select * from replies WHERE pendingModeration = 1', (err, result)=>
+  {
+    if(err)
+      console.log(err)
+    else
+      res.send(result)
+  }
+  )}
+)
+
 //GET requests do not have bodies, we need to use queries instead
 app.get("/api/selectcomments/:threadID", jsonParser, (req, res) => {
   const threadID = req.params.threadID;
   console.log('Searching for comment thread with the following ID:');
   console.log(threadID);
   const sqlQuery =
-    "SELECT comments.body, dateAdded, replyAccount.username AS replyAccount, datePosted, accounts.username, comments.commentID, replies.body AS replyBody FROM comments INNER JOIN commentThread ON commentThread.commentID = comments.commentId left JOIN replies ON replies.commentID = comments.commentID INNER JOIN accounts ON accounts.accountId = comments.accountId left JOIN accounts AS replyAccount ON replyAccount.accountId = replies.userID WHERE threadID = ? AND comments.pendingModeration = 0 ORDER BY datePosted DESC";
+    "SELECT replies.pendingModeration AS replyModeration, comments.body, replies.replyID, dateAdded, replyAccount.username AS replyAccount, datePosted, accounts.username, comments.commentID, replies.body AS replyBody FROM comments INNER JOIN commentThread ON commentThread.commentID = comments.commentId left JOIN replies ON replies.commentID = comments.commentID INNER JOIN accounts ON accounts.accountId = comments.accountId left JOIN accounts AS replyAccount ON replyAccount.accountId = replies.userID WHERE threadID = ? AND comments.pendingModeration = 0 ORDER BY datePosted DESC";
   db.query(sqlQuery, [threadID], (err, result) => {
     if (err) console.log(err);
     else res.send(result);
@@ -574,17 +695,20 @@ app.get("/api/selectcomments/:threadID", jsonParser, (req, res) => {
 });
 app.post("/api/addReply", jsonParser, (req, res) =>{
   console.log("addReply request received")
-  const query = "INSERT INTO replies(body, commentID, userID) VALUES(?,?,?)";
+
+  //const pendingModeration = hasCourseLanguage(req.vody.bodt)
+  const query = "INSERT INTO replies(body, commentID, userID, pendingModeration) VALUES(?,?,?, ?)";
 
   //dateAdded refers to the date of the reply
-  const query2 = "SELECT replyID, dateAdded, body, username AS replyAccount, commentID FROM replies LEFT JOIN accounts ON accounts.accountId = replies.userID ORDER BY dateAdded DESC"
+  const query2 = "SELECT replies.pendingModeration AS replyModeration, replyID, dateAdded, body, username AS replyAccount, commentID FROM replies LEFT JOIN accounts ON accounts.accountId = replies.userID WHERE pendingModeration = 0 ORDER BY dateAdded DESC"
   const body = req.body.body;
   const id = req.body.id;
   const accountId = req.body.accountId;
 
   console.log(body);
   console.log(id);
-  db.query(query, [body, id, accountId], (err,result)=>{
+  const pendingModeration = hasCourseLanguage(body)
+  db.query(query, [body, id, accountId, pendingModeration], (err,result)=>{
     if(err)
       {console.log(err)}
     else{
@@ -602,7 +726,7 @@ app.post("/api/addReply", jsonParser, (req, res) =>{
 app.get('/api/get/account/:username', jsonParser, (req, res)=>{
   console.log(req.params.username)
 
-  const query = 'SELECT * FROM accounts WHERE username =  ?'
+  const query = 'SELECT * FROM accounts WHERE username =  ? AND active = 1'
   db.query(query, [req.params.username], (error, result)=>{
     if(error)
       console.log(error)
@@ -625,23 +749,50 @@ app.get("/api/selectUnmoderated", (req, res) => {
 
 //add flag reply as well
 
+
+
+app.patch('/flag/reply', jsonParser, (req,res)=>{
+  const {replyID, flag, adminMode} = req.body;
+  console.log(`${replyID}, ${flag}`)
+  db.query('UPDATE replies SET pendingModeration = ? WHERE replyID = ?', [flag, replyID], (err, result)=>{
+    if(err)
+      console.log(err)
+    else
+    {
+
+
+
+      const query = adminMode ? 'SELECT * FROM replies WHERE pendingModeration = 1' : "SELECT replyID, dateAdded, body, username AS replyAccount, commentID FROM replies LEFT JOIN accounts ON accounts.accountId = replies.userID WHERE pendingModeration = 0 ORDER BY dateAdded DESC"
+      db.query(query, (err2, result2)=>{
+        res.send(result2)
+      })
+    }
+  })
+})
+
 app.patch("/flag/comment", jsonParser, (req, res) => {
   console.log("request received");
   //console.log(req.body.body);
-  const {commentId, flag} = req.body
+  const {commentId, flag, threadID} = req.body
   console.log(`${flag} ${commentId}`)
   const query = "UPDATE comments SET pendingModeration = ? WHERE commentId = ?";
   const commentID = req.body.commentId;
   //console.log("request received");
   db.query(query, [flag,commentId], (error, result) => {
     if (error) console.log(error);
-    console.log("query complete");
+      //console.log("query complete");
+    else
+    {
+      db.query(commentSelectQuery, [threadID], (err2, result2)=>{
+        res.send(result2)
+      })
+    }
   });
 });
 
 
 app.get("/api/get/videos", jsonParser, (req, res) => {
-  const statement = "SELECT videos.videoID, thread.threadID, videoLink, videoThumbnail, videoTitle FROM videos INNER JOIN videoThread ON videoThread.videoID = videos.videoID LEFT JOIN thread ON thread.threadID = videoThread.videoID";
+  const statement = "SELECT videos.videoID, videoDescription, thread.threadID, videoLink, videoThumbnail, videoTitle FROM videos INNER JOIN videoThread ON videoThread.videoID = videos.videoID LEFT JOIN thread ON thread.threadID = videoThread.threadID";
   db.query(statement, [], (err, result) => {
     if (err) console.log(err);
     else res.send(result);
@@ -650,17 +801,46 @@ app.get("/api/get/videos", jsonParser, (req, res) => {
 
 
 
+app.patch('/update/video', jsonParser, (req, res)=>{
+  const {videoThumbnail, videoLink, videoTitle, videoDescription, videoId} = req.body
+  var params;
+  var query;
+
+  if(videoLink)
+  {
+    query = 'UPDATE videos SET videoThumbnail = ?, videoLink = ?, videoTitle = ?, videoDescription = ? WHERE videoId = ?'
+
+    params = [videoThumbnail, videoLink, videoTitle, videoDescription, videoId]
+  }
+  else {
+    query = 'UPDATE videos SET videoDescription = ?, videoTitle = ? WHERE videoId = ?'
+    console.log(`VideoID: ${videoId}`)
+    params = [videoDescription, videoTitle, videoId]
+  }
+  db.query(query, params,(err, result)=>{
+    if(err)
+      console.log(err)
+    res.send(result)
+  }
+  )
+})
 //doesn't update title? 
 app.post("/api/updateTestimonial", jsonParser, (req, res)=>{
 
-  const{body, textBodyId, description, title} = req.body
+
+
+
+  const{body, textBodyId, description, title, previewImage} = req.body
+  console.log(`previewImage; ${previewImage}`)
+    console.log(`description: ${description} title; ${title}`)
+
   console.log("endpoint reached")
   console.log(body)
 
   //const {textBodyId, body} = req.body;
-  const statement = "UPDATE textBody SET body = ?, summary = ?, title = ?  WHERE textBodyId = ?"
+  const statement = "UPDATE textBody SET body = ?, summary = ?, title = ?, previewImage = ?  WHERE textBodyId = ?"
 
-  db.query(statement, [body, description, title, textBodyId], (error, result)=>{
+  db.query(statement, [body, description, title, previewImage, textBodyId], (error, result)=>{
     if(error)
       console.log(error)
     else
@@ -669,10 +849,14 @@ app.post("/api/updateTestimonial", jsonParser, (req, res)=>{
 
 })
 
-app.get("api/get/video/:videoId", (req, res)=>{
-  const query = "SELECT * FROM videos WHERE videoId = ?"
-  const videoId = req.params.videoId;
+app.get("/api/get/video/:videoId", (req, res)=>{
 
+
+  //const videoId = req.params.videoId
+  const query = "SELECT * FROM videos WHERE videoID = ?"
+
+  const videoId = req.params.videoId;
+  console.log(`video ID: ${videoId}`)
   db.query(query, [videoId], (error, result)=>{
     if(!error)
       res.send(result)
@@ -707,7 +891,7 @@ app.use(express.json());
 app.get("/api/get/textBody/:title", jsonParser, (req, res)=>{
 
   //const statement = "SELECT title,textBody.textBodyId ,body, videoLink, videoThumbnail FROM textBody LEFT JOIN textBodyVideo ON textBody.textBodyId = textBodyVideo.textBodyId LEFT JOIN videos ON textBodyVideo.videoId =  videos.videoId WHERE textBody.title = ?"
-  const statement = "SELECT * FROM textBody WHERE title=?"
+  const statement = "SELECT threadID, textBody.textBodyId, body, title, summary, previewImage FROM textBody INNER JOIN textBodyThread ON textBodyThread.textBodyId = textBody.textBodyId WHERE title=?"
 
 
   //const statement = "SELECT * FROM textBody WHERE textBodyId = ?"
@@ -732,13 +916,26 @@ app.get("/api/get/article/:title", jsonParser, (req, res)=>{
 })
 app.post("/api/addTextBody", jsonParser, (req, res)=>{
   //testing whether or not JSON can be sent via HTTP post
-  const {title, description, category, body} = req.body;
-  const statement = "INSERT INTO textBody(title, body, summary, category) VALUES(?,?, ?, ?)";
-  db.query(statement,[title,body,description, category ], (err, result)=>{
-    if(err)
+  const {title, description, previewImage, category, body} = req.body;
+  console.log(`${previewImage}`)
+  const statement = "INSERT INTO textBody(title, body, summary, category, previewImage) VALUES(?,?, ? ,'article', ?)";
+  db.query(statement,[title,body,description, previewImage ], (err, result)=>{
+    if(err){
       res.send(err)
+      console.log(err)
+    }
     else
+      {db.query('INSERT INTO thread(threadID) VALUES(null)',(err2, result2)=>{
+        if(!err2)
+        {
+          db.query('INSERT INTO textBodyThread(threadID, textBodyId) VALUES(?,?)', [result2.insertId, result.insertId], (err3, result3)=>{
+            if(err3)
+              console.log(err3)
+          })
+        }
+      })
       res.send(result)
+    }
   } )
   
   
@@ -798,7 +995,7 @@ app.post("/api/addcomment", jsonParser, (req, res) => {
 
 //these two should be merged into one function
 app.get("/api/get/testimonials", (req, res)=>{
-  const statement = 'SELECT textBody.textBodyId, title, summary, videoLink FROM textBody INNER JOIN textBodyVideo ON textBodyVideo.textBodyId = textBody.textBodyId INNER JOIN videos ON videos.videoId = textBodyVideo.videoId'
+  const statement = 'SELECT textBody.textBodyId, date, title, summary, previewImage, videoLink FROM textBody INNER JOIN textBodyVideo ON textBodyVideo.textBodyId = textBody.textBodyId INNER JOIN videos ON videos.videoId = textBodyVideo.videoId'
 ;
   db.query(statement,[], (error, result)=>{
     if(!error)
@@ -814,7 +1011,7 @@ app.get("/api/get/testimonial/:testimonialTitle", (req, res)=>{
 
     const testimonialTitle = req.params.testimonialTitle
     
-    const statement = "SELECT videoLink, textBody.textBodyId, videoDescription, videoTitle, title,body FROM videos INNER JOIN textBodyVideo ON textBodyVideo.videoId = videos.videoId INNER JOIN textBody ON textBody.textBodyId = textBodyVideo.textBodyId WHERE title=?"
+    const statement = "SELECT videoLink, videos.videoId, previewImage, summary, textBody.textBodyId, videoDescription, videoTitle, title,body FROM videos INNER JOIN textBodyVideo ON textBodyVideo.videoId = videos.videoId INNER JOIN textBody ON textBody.textBodyId = textBodyVideo.textBodyId WHERE title=?"
     db.query(statement, [testimonialTitle], (err, result)=>{
       if(err)
         console.log(err)
@@ -835,7 +1032,7 @@ app.get("/api/get/testimonial/:testimonialTitle", (req, res)=>{
 
 
 app.get("/api/get/articles", (req, res)=>{
-  const statement = "select textBodyId,title,date, summary from textBody WHERE category='article'";
+  const statement = "select textBodyId,title,date, previewImage, summary from textBody WHERE category='article'";
   db.query(statement,[], (error, result)=>{
     if(!error)
       res.send(result)
@@ -873,6 +1070,16 @@ app.post('/upload/media', upload.single('imageFile'), (req,res)=>{
 
 
 })
+
+
+
+
+app.patch('/articles/delete', (req, res)=>{
+  db.query('DELETE FROM textBody WHERE textBodyId = ?', [])
+
+
+
+});
 
 //used to display files on the web page 
 app.get('/images/:fileName',(req,res)=>{

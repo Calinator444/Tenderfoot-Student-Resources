@@ -1,5 +1,7 @@
 import { RemoveFromQueue } from "@mui/icons-material";
 import React, {useRef, useState, useEffect} from "react";
+
+import { sliceComments } from "../Functions/threadActions";
 import {Form, Button} from 'react-bootstrap'
 
 import { useSelector } from "react-redux";
@@ -7,11 +9,12 @@ import { useSelector } from "react-redux";
 import Axios from 'axios';
 import {compareDates} from '../Functions/dateArithmethic'
 function Comment(props) {
-  const {replySetter} = props
+  //const {replySetter} = props
   const store = useSelector(state => state)
   
   const [middleStatement, setMiddleStatement] = useState('');
-  const { username, body, commentId, timePosted } = props;
+  //threadID prop is used when a 
+  const { username, body, commentId, timePosted, commentSetter, replySetter, threadID, setModalState} = props;
   const [replyContent, setReplyContent] = useState('')
 
 
@@ -51,6 +54,33 @@ function Comment(props) {
 
   // }
 
+
+
+
+  const flagComment = (thisCommentId)=>{
+  Axios.patch("http://localhost:3001/flag/comment", {commentId: thisCommentId, flag: 1, threadID: threadID}).then((res)=>{
+      //replies & comment query
+      if(res)
+      {
+        
+        console.log('response: ')
+        console.log(res)
+        console.log(res.data)
+        const response = sliceComments(res.data)
+        const {replies, comments} = response;
+        console.log(replies)
+        console.log(comments)
+        commentSetter(comments)
+        replySetter(replies)
+        setModalState({title: 'Comment reported', message: 'The comment will be inspected by an administrator. If it is deemed acceptable be approved.', show: true})
+        //setReplyContent(replies)
+        //const mapping = res.data.map(({ body: replyBody, commentID,replyAccount,dateAdded }) => ({replyBody,commentID, replyAccount, dateAdded}));
+        //replySetter(mapping)
+
+      }
+
+  })
+  }
   const postReply = (commentID) => {
 
     // console.log(commentID);
@@ -58,8 +88,15 @@ function Comment(props) {
     // const body = {commentID: commentID, body: replyContent};
     Axios.post("http://localhost:3001/api/addReply", 
     {id: commentID, body: replyContent, accountId: store.userId}).then((res)=>{
+
+
+      console.log('post reply data')
       console.log(res.data)
-      const mapping = res.data.map(({ body: replyBody, commentID,replyAccount,dateAdded }) => ({replyBody,commentID, replyAccount, dateAdded}));
+
+
+      if(res.data.affectedRows == 0)
+        setModalState({title: 'Your comment has been flagged', message: 'Your comments has been flagged for a moderator to inspect. It likely contained coarse language', show: true})
+      const mapping = res.data.map(({ body: replyBody, commentID,replyAccount,dateAdded, replyID }) => ({replyBody,commentID, replyAccount, dateAdded, replyID}));
       replySetter(mapping)
 //console.log(transformed);
     })
@@ -118,7 +155,7 @@ function Comment(props) {
         <div className="time-posted">{`Posted: ${middleStatement} at ${hour}:${minutes < 10 ? "0" : ""}${minutes}${meridian}`}</div>
         <div className="comment-actions">
         {/* does nothing rn */}
-        <span>Report</span>
+        <span onClick={()=>{flagComment(commentId)}}>Report</span>
 
 
 

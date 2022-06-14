@@ -364,7 +364,7 @@ function TodoList() {
     }
     },[studyInterval])
   return (
-    <div id="main-content" class="white-mainclass">
+    <div id="main-content" class="white-mainclass" style={{height: '100vh', overflowY: 'scroll'}}>
         <h1>Todo list</h1>
         <Form.Label>Period within the year</Form.Label> 
         <Form.Select onChange={(e)=>{

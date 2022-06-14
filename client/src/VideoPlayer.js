@@ -15,23 +15,31 @@ function VideoPlayer() {
     setSelectedIndex(index);
     console.log("SELECTED THREAD")
     console.log(videos[index].threadID)
+    console.log(`selected index ${index}`)
+    console.log('videos')
+    console.log(videos)
     
   };
   const [selectedThread,setSelectedThread] = useState(0);
-  const [commentBody, setCommentBody] = useState("");
-  const [replyArray, setReplyArray] = useState([])
+  // const [commentBody, setCommentBody] = useState("");
+  // const [replyArray, setReplyArray] = useState([])
   const [videos, setVideos] = useState([]);
   //by default the first video is selected
   const [selectedIndex, setSelectedIndex] = useState(0);
-  const [currentVideo, setCurrentVideo] = useState(
-    "https://www.youtube.com/embed/jk3SlCsF-bM"
+  const [currentVideo, setCurrentVideo] = useState(''
+    //"https://www.youtube.com/embed/jk3SlCsF-bM"
   );
 
   const [commentArray, setCommentArray] = useState([]);
   const [comments, setComments] = useState([]);
 
+
+  const [dataGathered, setDataGathered] = useState(false)
+
   //
   useEffect(() => {
+    if(!dataGathered)
+    {
     Axios.get("http://localhost:3001/api/get/videos").then((res) => {
       // console.log(res);
       setVideos(res.data);
@@ -41,7 +49,11 @@ function VideoPlayer() {
 
       //might cause an infinite render loop
       setSelectedThread(res.data[0].threadID)
+      setCurrentVideo(res.data[0].videoLink)
+      
     });
+    setDataGathered(true)
+    }
 
 
     

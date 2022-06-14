@@ -16,14 +16,14 @@ import noPreviewImage from './resources/no-preview-image.jpg'
 
 import { scaleThumbnail } from './Functions/imageScale';
 
-import React, { useState, useEffect, myRef, useImperativeHandle, setErrorMessage } from 'react';
+import React, { useState, useEffect, useRef, useImperativeHandle, setErrorMessage } from 'react';
 import { EditorState , convertToRaw, convertFromHTML, ContentState, convertFromRaw} from 'draft-js';
 import {convertToHTML,} from 'draft-convert'
 import Axios from "axios";
-import {Button, Modal, Form, Row, Col} from 'react-bootstrap';
+import {Button, Modal, Form, Row, Col, Alert} from 'react-bootstrap';
 import { Editor } from 'react-draft-wysiwyg';
 import 'react-draft-wysiwyg/dist/react-draft-wysiwyg.css';//formatting breaks when this line is removed
-import { LocalConvenienceStoreOutlined } from '@mui/icons-material';
+import { ContactSupport, LocalConvenienceStoreOutlined } from '@mui/icons-material';
 // import './App.css';
 
   
@@ -31,14 +31,14 @@ import { LocalConvenienceStoreOutlined } from '@mui/icons-material';
   
 
   const [textBodyId, setTextBodyId] = useState(0)//a way of memorizing the article id if only the title was provided
-
-
+  const [fetchComplete, setFetchComplete] = useState(false)
+  const [timer, setTimer] = useState(null)
 
   //publishing mode can be passed as an empty attribute, and the system will display the approprate controls for uploading the article contents
   const {myRef, title, description, editMode, category, publishingMode, 
 
   //overrideState is used when we want a parent element to have control of the editor state
-  stateHandler, overrideState, setErrorMessage, previewImageSetter} = props;
+   overrideState, setErrorMessage, articleState, setArticleState, overrideStateHandler, setThreadId} = props;
   
   
 
@@ -52,49 +52,88 @@ import { LocalConvenienceStoreOutlined } from '@mui/icons-material';
   //   console.log(readOnly)
   // }
 
+  const previewImageBox = useRef()
+  
 
+  //state for this object
   const [state, setState] = useState({
     title: '',
     description: '',
-    previewImage: noPreviewImage
+    previewImage: noPreviewImage,
+    imageFound: true,
+    includePreview: false,
+    waiting: false,
   })
   
 
+
+  const forceTimeout = ()=>{
+
+
+
+
+
+    console.log('forceTimeout')
+    var time = 0
+    setTimeout((tick)=>{
+      console.log(`holding timeout for ${time}`)
+    
+    },10000)
+
+    setState({...state, waiting: false})
+    
+  }
   const handleImageDirectoryChange = (e)=>
   {
-    console.log('handleimagedirectorychange fired!')
+      const value = e.target.value
 
-    // var img = new Image()
-    // img.src = e.target.value;
-    // console.log(img)
 
-    // var request = new XMLHttpRequest();
-    // request.open('GET', e.target.value,true)
-    // request.send()
-    // request.onload = ()=>{
-    //   console.log(request.status)
-    // }
-    const value = e.target.value
+      //clear the previously set timeout if it didn't get the chance to make a request
+      clearTimeout(timer)
 
-    //const {value} = e.target
-    if(value == '')
-    {
-      setState({...state, previewImage: noPreviewImage})
-      return
-    }
-    else{
-      Axios.get(e.target.value).then(()=>{
-        setState({...state, previewImage: value})
-        console.log('then fired')
-        
-      }).catch(()=>{
-      console.log('catch fired')
-      setState({...state, previewImage: noPreviewImage})
-      //imageLocated = false
-    })
+      //wait before sending the http request and updating the state so that the server doesn't get inundated with traffic
+      const newTimeout = setTimeout(()=>{
 
-    }
-    
+
+      console.log('timeout fired')
+      //const {value} = e.target
+      if(value == '')
+      {
+        console.log('value empty')
+        stateHandler({...state, previewImage: noPreviewImage, imageFound: false, waiting: true})
+        //setTimeout(()=>{setState({...state, waiting: false})})
+        return
+      }
+      else
+      {
+
+        //if the form updates before the previous timer has finished, the function inside the timer will not execute
+        // clearTimeout(timer)
+
+        console.log('else clause')
+
+        //we delay the request every time the user starts typing
+        // const newTimer = setTimeout(()=>{
+
+        Axios.get(e.target.value).then((res)=>{
+          console.log(res.status)
+        })
+        .catch(()=>{
+        console.log(`catch fired for ${e.target.value}`)
+
+        stateHandler({...state, previewImage: noPreviewImage, imageFound: false})
+        return;
+        //setTimeout(()=>{setState({...state, waiting: false})})
+        })
+        // setTimer(newTimer)
+        //return;
+        //imageLocated = false
+      // })
+      } 
+      stateHandler({...state, previewImage: e.target.value, imageFound: true})
+      }, 1000);
+      setTimer(newTimeout)
+      //setTimeout(()=>{setState({...state, waiting: false})})
 
     //console.log(imageLocated)
     
@@ -121,6 +160,20 @@ import { LocalConvenienceStoreOutlined } from '@mui/icons-material';
   const [readOnly, setReadOnly] = useState('false')
  
 
+
+
+  const stateHandler = (values)=>
+  {
+    if(articleState)
+    {
+      console.log('article state declared')
+      //this handler is used to set the state of a parent element (assuming the handler has been provided)
+      setArticleState({...state, ...values})
+    }
+    else
+      setState({...state, ...values})
+  }
+
   const logStuff = ()=>{
     console.log(`logging stuff`)
   }
@@ -133,7 +186,11 @@ import { LocalConvenienceStoreOutlined } from '@mui/icons-material';
 
 
     //cons
-    const parameters = {body: JSON.stringify(convertToRaw(editorState.getCurrentContent())),textBodyId : getId, description: description, title: title}//this line here is throwing the error
+    console.log(`${state.previewImage == ''} ${state.previewImage == noPreviewImage}`)
+    const getImagePreview = state.reviewImage == '' || state.previewImage == noPreviewImage ? null : previewImage
+    console.log(getImagePreview)
+    console.log(`State.previewimage null: ${state.previewImage == noPreviewImage}`)
+    const parameters = {body: JSON.stringify(convertToRaw(editorState.getCurrentContent())),textBodyId : getId, description: description, previewImage: state.includePreview && state.imageFound ?  state.previewImage : null ,title: title}//this line here is throwing the error
     Axios.post("http://localhost:3001/api/updateTestimonial", parameters).then((res)=>{
     
 
@@ -170,7 +227,7 @@ import { LocalConvenienceStoreOutlined } from '@mui/icons-material';
 
 
     Axios.post("http://localhost:3001/api/addTextBody", {body: JSON.stringify(convertToRaw(editorState.getCurrentContent())), 
-    description: description, title: title, category: category}).then((res)=>{
+    description: state.description, previewImage: state.previewImage ,title: state.title, category: category}).then((res)=>{
 
       const {errno, affectedRows} = res.data
       console.log(res.data)
@@ -232,17 +289,28 @@ import { LocalConvenienceStoreOutlined } from '@mui/icons-material';
     setReadOnly(!readOnly)
   }
   useEffect(()=>{
+
+
+    if(articleState)
+    {
+      setState({...state, ...articleState, previewImage: articleState.previewImage == null ? noPreviewImage : articleState.previewImage})
+      // console.log(articleState)
+    }
+    // if(articleState)
+    //   setState = setArticleState()
     setShowControls(props.showControls)
     setReadOnly(props.readOnly)
-    console.log(`readOnly was set to ${readOnly}`)
+    // console.log(`readOnly was set to ${readOnly}`)
 
-    console.log(`show controls was set to: ${showControls}`)
+    // console.log(`show controls was set to: ${showControls}`)
+    
 
     //there's some lag when you change state variables so we need to use the prop value
+
     if(props.readOnly)
     {
 
-      console.log(`props.readOnly is GOOOOOOO`)
+      // console.log(`props.readOnly is GOOOOOOO`)
       setShowControls(false)
     }
     if(title)
@@ -250,9 +318,11 @@ import { LocalConvenienceStoreOutlined } from '@mui/icons-material';
 
 
       console.log('title was given')
+      if(!fetchComplete)
+      {
       Axios.get(`http://localhost:3001/api/get/textBody/${title}`).then((res)=>{
-      console.log(res.data)
-      console.log('get request complete')
+      // console.log(res.data)
+      // console.log('get request complete')
 
         // We need to use an indexer because sql returns an array whenever a 'WHERE' clause is provided
         //setResponse(res.data[0].body)
@@ -262,14 +332,16 @@ import { LocalConvenienceStoreOutlined } from '@mui/icons-material';
 
         //the body may be set to null if the thread has been manually inserted into the database
         //if such is the case exiting the function without making any assignments should prevent bugs
-        console.log('hmm.... no article')
+        // console.log('hmm.... no article')
         return;
       }
       else{
         setTextBodyId(res.data[0].textBodyId)
-        const {title, summary} = res.data[0]
-        var tempState = {...state, description: summary, title: title}
-      setState(tempState)
+        const {title, summary, previewImage} = res.data[0]
+        const values = {description: summary, title: title, previewImage: (previewImage == null ? noPreviewImage : previewImage), includePreview: !(previewImage == null) }
+        var tempState = articleState ? {...articleState, ...values}: {...state, ...values}
+        stateHandler(tempState)
+      //setState(tempState)
         
       }
 
@@ -277,21 +349,26 @@ import { LocalConvenienceStoreOutlined } from '@mui/icons-material';
       // {
       //   this.toggleRead.bind(this)
       // }
-      console.log(response);
+      // console.log(response);
       const contentState = convertFromRaw(JSON.parse(response));
       const newState = EditorState.createWithContent(contentState)
       //var tempState = {...state}
-      const {summary, title}= res.data[0]
-      
-      console.log("newState")
-      console.log(newState)
+      const {summary, title, threadID}= res.data[0]
+      if(setThreadId)
+      {
+        // console.log(`threadID was set to: ${threadID}`)
+        setThreadId(threadID)
+
+      }
+      // console.log("newState")
+      // console.log(newState)
       // const state = ContentState.createFromBlockArray(response.contentBlocks, response.entityMap)
 
       //might cause a recursion error
       // setEditorState(response)
         // setEditorState(state)
 
-      console.log("text editor contents were overriden")
+      // console.log("text editor contents were overriden")
 
       // const blocksFromHTML = convertFromHTML(response)
 
@@ -304,7 +381,9 @@ import { LocalConvenienceStoreOutlined } from '@mui/icons-material';
       //console.log(convertToHTML(newState.getCurrentContent()))
       //console.log(convertToHTML(editorState.getCurrentContent()))
       })
-      
+      setFetchComplete(true)
+      //ensure the request is only made once for performance reasons
+      }
     }
     else
     {
@@ -312,7 +391,7 @@ import { LocalConvenienceStoreOutlined } from '@mui/icons-material';
       console.log('title not provided?')
       //console.log("Text editor contents were left empty")
     }
-  }, [readOnly])
+  }, [readOnly, articleState])
 
 
 
@@ -328,7 +407,7 @@ import { LocalConvenienceStoreOutlined } from '@mui/icons-material';
             <Form.Group>
 
                 <Form.Label>Title</Form.Label>
-                <Form.Control value={state.title} type="Text" name="title"  onChange={(e)=>{setState({...state, title: e.target.value})}} placeHolder="Article Title"></Form.Control >
+                <Form.Control defaultValue={state.title} type="Text" name="title"  onChange={(e)=>{stateHandler({...state, title: e.target.value})}} placeHolder="Article Title"></Form.Control >
 
                 <Form.Text variant="text-muted">The title that will appear when the article is listed</Form.Text>
             </Form.Group>
@@ -337,14 +416,15 @@ import { LocalConvenienceStoreOutlined } from '@mui/icons-material';
               <Row>
                 <Col>
                 <Form.Label>Description</Form.Label>
-                <Form.Control style={{marginBottom: '50px'}} value={state.description} name="description" onChange={(e)=>{setState({...state, description: e.target.value})}} as="textarea" rows="3" placeholder='Article Description'/>
+                <Form.Control maxLength={255} style={{marginBottom: '50px'}} defaultValue={state.description} name="description" onChange={(e)=>{stateHandler({...state, description: e.target.value})}} as="textarea" rows="3" placeholder='Article Description'/>
                 </Col>
                 <Col>
-                {state.previewImage}
+                <Form.Label>Preview Image</Form.Label>
+                <div style={{width: '200px', height: '200px', marginBottom: '20px' , backgroundImage: `url(${state.previewImage})`, backgroundSize: scaleThumbnail(state.previewImage, 200)}}></div>
 
-                <div style={{width: '200px', height: '200px', backgroundImage: `url(${state.previewImage})`, backgroundSize: scaleThumbnail(state.previewImage, 200)}}></div>
-                {/* <img src={state.previewImage} alt="choose preview image" /> */}
-                <Form.Control onChange={(e)=>{handleImageDirectoryChange(e)}} placeholder='add a link to your preview image' type='text'></Form.Control>
+                <Form.Check type='checkbox' defaultChecked={articleState ? !articleState.includePreview : !state.includePreview} onClick={(e)=>{stateHandler({...state, includePreview: e.target.checked}); console.log(state.includePreview)}} label='Include preview image'/>
+                {state.imageFound ? <></> : <Alert variant='danger'>Image not found</Alert>}
+                <Form.Control on disabled={articleState ? !articleState.includePreview : !state.includePreview} defaultValue={state.previewImage == noPreviewImage ? '': state.previewImage} style={{marginBottom: '20px'}} onChange={(e)=>{handleImageDirectoryChange(e)}} placeholder='add a link to your preview image' type='text'></Form.Control>
                 
                 
                 </Col>
@@ -368,19 +448,23 @@ import { LocalConvenienceStoreOutlined } from '@mui/icons-material';
                 editorClassName={'editor-class'}
                 wrapperStyle={{backgroundColor: '#FFFFFF',border: readOnly ? '0px' :'1px solid black', borderRadius: '5px'}}
                 // onChange={window.editorState = editorState}
-                onEditorStateChange={stateHandler ? stateHandler :setEditorState}
+                onEditorStateChange={overrideStateHandler ? overrideStateHandler :setEditorState}
                 //onEditorStateChange={setEditorState} 
                 />
                 <section className='admin-controls' style={{display: (showControls ? "block" : "none") }}>
 
                 {/* might have to remove this using an "edit" or "create" mode */}
                 <Button onClick={()=>{updateTextBody()}}>Update Text</Button>
+                                  {/* <Button onClick={()=>{console.log(state)}}></Button> */}
+
                  {/* <Button variant="secondary"
                   onClick={()=>{toggleRead()}}>Toggle Editing Mode</Button> */}
                 </section>
 
                 <section className='admin-publishing' style={{display:(publishingMode ? "block" : "none")}}>
-                  <Button onClick={()=>{addTextBody()}}>Upload Article</Button>
+                  <Button onClick={()=>{addTextBody()}}>Upload Article</Button><Button onClick={()=>{console.log(state)}}>Log state</Button>
+
+
                   {/* <Button></Button> */}
                 </section>
                

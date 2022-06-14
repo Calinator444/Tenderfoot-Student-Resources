@@ -8,7 +8,7 @@ import {useParams} from "react-router-dom"
 function AccountSuccess() {
 const {activationKey} = useParams()
   return (
-    <div id="main-content" className='white-mainclass'>
+    <div id="main-content" className='white-mainclass' style={{height: '100vh', overflowX: 'scroll'}}>
         <h2>Success</h2>
         <p>You've successfully created an account! <br/>
         In order to use your account you need to do the following: 

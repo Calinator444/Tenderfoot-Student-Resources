@@ -4,7 +4,7 @@ Purpose: A page that can be used re-used to display a list of generic articles
 
 */
 
-
+import { scaleThumbnail } from '../Functions/imageScale';
 
 import { compareDates, formatDate, formatTime} from '../Functions/dateArithmethic';
 import Mainnav from '../reactcomponents/Mainnav';
@@ -49,8 +49,6 @@ function TestimonialList(props) {
         console.log(`active indices: ${activeIndex * 6} ${(activeIndex + 1)*6}`)
         setArticleList(dataset)
 
-        console.log(dataset)
-        // Axios.get("http://localhost:3001/api/get/testimonials").then(
         // (res)=>{
         //     console.log(res.data)
         //     setArticleList(res.data)
@@ -58,7 +56,7 @@ function TestimonialList(props) {
         // ).catch((err)=>{console.log("we couldn't locate the Article you're looking for :(")})
         let index = 0;
         let tempArray = [];
-        for(let i = 0; i < dataset.length; i += 6)
+        for(let i = 0; i < dataset.length; i += 4)
         {
 
 
@@ -79,47 +77,35 @@ function TestimonialList(props) {
     
         {/* .slice((activeIndex + 1)*6, (activeIndex + 1)*6) */}
 
-
+            {testimonials ? <></>:
             <Row>
                 <Col xs={4}>
                     <Form.Control xs={5} onChange={(e)=>{setSearchTerm(e.target.value)}} placeholder='search'></Form.Control>
                 </Col>
             </Row>
+            }
         <ul className={gridOverride ? 'article-list-grid' : 'article-list'}>
             {
                 //conditional rendering to the rescue fell@s
             searchTerm == '' ?
-            articles.slice(activeIndex * 6, (activeIndex + 1)*6).map((values)=>{
+            articles.slice(activeIndex * 4, (activeIndex + 1)*4).map((values)=>{
 
 
                 
                 
                 
-                const {title, textBodyId, summary, date} = values;
+                const {title, textBodyId, previewImage, summary, date} = values;
                 //console.log(`textBodyId ${textBodyId}`)
 
                 const currentDate = new Date()
                 const d = new Date(date)
-                //refactor this using 
-                // var dateString;
-                // switch(compareDates(d))
-                // {
-                //     case 1: 
-                //     dateString = 'yesterday'
-                //     break;
-                //     case 0: 
-                //     dateString = 'today'
-                //     break;
-                //     default: 
-                //     dateString = formatDate(d)//`${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`
-                //     break;
-                // }
+
                 return(
                 <li>
 
 
                     <div className="head">
-                        <div className='thumbnail' style={{ width: "100px", height: "100px", backgroundImage: `url(${noPreviewImage})` }} />
+                        <div className='thumbnail' style={{ width: "100px", height: "100px",  backgroundImage: `url(${previewImage ? previewImage : noPreviewImage})`, backgroundSize: scaleThumbnail(previewImage ? previewImage : noPreviewImage, 100) }} />
                         <div className='preview-content'>
                         
                     {/* to={{
@@ -128,7 +114,7 @@ function TestimonialList(props) {
                     } */}
                     <Link to={`${navigationLink}${title}`}>
                         <h3>{title}</h3></Link>
-                    {`Published: ${dateFormat(new Date(date))} at ${formatTime(new Date(date))}`}
+                    <p style={{fontStyle: 'italic'}}>{`Published: ${dateFormat(new Date(date))} at ${formatTime(new Date(date))}`}</p>
 
                 {/* <p></p> */}
                 </div>
@@ -141,12 +127,12 @@ function TestimonialList(props) {
             {
                 
                 
-                const {title, summary, date} = val
+                const {title, summary, date, previewImage} = val
                 return(
                     
                     <li>
                         <div className="head">
-                        <div className='thumbnail' style={{ width: "100px", height: "100px", backgroundImage: `url(${noPreviewImage})` }} />
+                        <div className='thumbnail' style={{ width: "100px", height: "100px", backgroundImage: `url(${previewImage ? previewImage : noPreviewImage})`, backgroundSize: scaleThumbnail(previewImage ? previewImage : noPreviewImage, 100) }} />
                         <div className='preview-content'>
                         
                     {/* to={{
@@ -155,7 +141,7 @@ function TestimonialList(props) {
                     } */}
                     <Link to={`/ArticleView/${title}`}>
                         <h3>{title}</h3></Link>
-                    {`Published: ${dateFormat(date)} at ${formatTime(new Date(date))}`}
+                    <p style={{fontStyle: 'italic'}}>{`Published: ${dateFormat(date)} at ${formatTime(new Date(date))}`}</p>
 
                 {/* <p></p> */}
                 </div>
@@ -182,7 +168,7 @@ function TestimonialList(props) {
         {
 
 
-        searchTerm == '' ?
+        searchTerm == ''  && dataset.length > 4?
         <>
 
 
@@ -192,7 +178,8 @@ function TestimonialList(props) {
 
 
             {pageNumbering}
-        </Pagination> <button onClick={()=>{console.log(activeIndex)}}>Log active index</button></>
+        </Pagination></> 
+        
         :
             <></>
 

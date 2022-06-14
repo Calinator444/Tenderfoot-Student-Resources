@@ -241,7 +241,7 @@ const [resetFormData, setResetFormData] = useState({
 
   };
   return (
-    <div id='main-content' className="white-mainclass" style={{overflowY: 'auto'}}>
+    <div id='main-content' className="white-mainclass" style={{overflowY: 'auto', height: '100vh'}}>
     {/* <Container> */}
 
 
