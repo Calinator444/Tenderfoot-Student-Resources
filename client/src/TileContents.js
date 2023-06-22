@@ -22,11 +22,4 @@ export const TileContents= [{
     body: "get a head start on your studies with the video guides we've created to help you navigate the univesity's various student resources.",
     backgroundImage: videoPlayer,
     link: "/videos",
-}
-// {
-//     title: "Finding your way around campus",
-//     body: "give yourself some time to figured out the layout of the campus with some of the 5 tips we have to offer"
-//     backgroundImage: 
-// }
-
-]
+}]

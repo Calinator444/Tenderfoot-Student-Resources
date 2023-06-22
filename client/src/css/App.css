@@ -354,13 +354,20 @@ iframe{
     width: 100%;
   }
 }
+.tile > * {
+  margin-left: 20px;
+  margin-right: 20px;
+}
 .tile {
+  align-items: flex-start;
   width: 300px;
   height: 300px;
+  display: flex;
+  flex-direction:column;
   position: relative;
   background-size: 110%;
   margin: 20px;
-  box-shadow:         inset 0 0 40px #000000;
+  box-shadow: inset 0 0 40px #000000;
 }
 .todo-description{
   text-indent: 40px;
@@ -386,8 +393,12 @@ svg{
   position: absolute;
   bottom: 0;
 }
-
-
+.tile > h2 {
+  margin-top: 20px;
+}
+.tile > p {
+  height: 140px;
+}
 .tile > p, .tile > h2 {
   background-color: rgba(0, 0, 0, 0.74);
   color: #FFFFFF;
@@ -400,16 +411,13 @@ section.admin-controls > *, .admin-publishing > * {
   margin: 10px;
 }
 
-.tile > * {
-  margin: 20px;
-}
+
+
 .main-expanded {
-  /*width: 80vw;*/
   animation-name: main-expanded;
   width: 80vw;
 }
 .main-collapsed {
-  /* width: 70vw; */
   animation-name: main-collapsed;
   width: 60vw;
 }

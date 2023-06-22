@@ -45,13 +45,6 @@ import { ContactSupport, LocalConvenienceStoreOutlined } from '@mui/icons-materi
   //using "props" lets us disambiguate between the local state variable "show controls" and the prop that was given
   const[showControls, setShowControls] = useState(false)
 
-  // const toggleReadonly = ()=>{
-  //   console.log("toggle read only fired")
-  //   let newValue = readOnly ? false : true;
-  //   setReadOnly(newValue)
-  //   console.log(readOnly)
-  // }
-
   const previewImageBox = useRef()
   
 
