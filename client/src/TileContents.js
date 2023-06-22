@@ -13,13 +13,13 @@ export const TileContents= [{
 },
 {
     title: "Testimonials",
-    body: "listen to written and recorded accounts from students who started off in the same place as yourself",
+    body: "listen to written and recorded accounts from students who started off in the same place as yourself.",
     backgroundImage: studentsgathered,
     link: '/Testimonials/testimonialList'
 },
 {
     title: "How-to-videos",
-    body: "get a head start on your studies with the video guides we've created to help you navigate the univesity's various student resoruces",
+    body: "get a head start on your studies with the video guides we've created to help you navigate the univesity's various student resources.",
     backgroundImage: videoPlayer,
     link: "/videos",
 }
