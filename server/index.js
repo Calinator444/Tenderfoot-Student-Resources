@@ -533,10 +533,11 @@ const { off } = require("process")
 //app.use(bodyParser.urlencoded({ extended: false }))
 //app.use(bodyParser.json()
 
+
 const db = mysql.createPool({
   password: "password",
   user: "root",
-  database: "tenderfootDB",
+  database: "TenderfootDB",
   host: "localhost",
   multipleStatements: true
 });

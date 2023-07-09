@@ -269,7 +269,7 @@ function TestimonialView() {
 
                 {editingMode ? 
                 <Form.Group>
-                <Button onClick={()=>{uploadChanges()}}>Publish Changes</Button> <Button onClick={()=>{console.log(articleState)}}></Button>
+                <Button onClick={()=>{uploadChanges()}}>Publish Changes</Button> 
                 </Form.Group>:
                 <></>
                 }
